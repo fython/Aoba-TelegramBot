@@ -1,5 +1,23 @@
 Aoba Bot
----
+======
+
+## Introduce
+
+A Telegram Bot written in [Kotlin](https://kotlinlang.org/) language. 
+Use [rubenlagus/TelegramBots](https://github.com/rubenlagus/TelegramBots) as bot base library.
+I made a wrapper to develop functions easily and quickly. 
+In the future I may separate framework from this repository and publish under Apache 2.0 Licenses.
+
+**Currently only support Chinese. It's not convenient.**
+
+## What functions it has now?
+
+It's still in unstable development.
+
+Now it has two games you can play in group:
+
+- Guess number
+- Deliver bomb (Sticker)
 
 ## Configure Bot keystore
 
@@ -9,6 +27,14 @@ Aoba Bot
 BOT_TOKEN=123456:XXXX
 BOT_USERNAME=sb_bot
 ```
+
+## Contact me
+
+Telegram: [@fython](https://t.me/fython)
+
+Donate via Alipay: `316643843#qq.com` (Replace `#` with `@`)
+
+Donate via PayPal: [https://paypal.me/fython](https://paypal.me/fython)
 
 ## License
 
