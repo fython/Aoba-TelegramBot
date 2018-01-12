@@ -17,6 +17,12 @@ apply plugin: 'application'
 
 mainClassName = "moe.feng.aoba.Launcher"
 
+jar {
+    manifest {
+        attributes('Main-Class': "moe.feng.aoba.Launcher")
+    }
+}
+
 repositories {
     mavenCentral()
     maven { url "https://kotlin.bintray.com/kotlinx" }
