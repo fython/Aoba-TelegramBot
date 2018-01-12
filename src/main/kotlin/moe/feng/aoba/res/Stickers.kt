@@ -13,6 +13,7 @@ object Stickers {
 
 	val catWithClock by sticker()
 	val killCat by sticker()
+	val konataShoot by sticker()
 
 	private fun sticker(name: String? = null) = StickerProperty(name)
 

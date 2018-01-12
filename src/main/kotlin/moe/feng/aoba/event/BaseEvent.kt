@@ -19,9 +19,7 @@ open class BaseEvent(val chatId: Long, protected val bot: BaseTelegramBot) : Tel
 	open fun onStop() {}
 
 	fun stop() {
-		println("stop")
 		if (isAlive) {
-			println("dead")
 			isAlive = false
 			onStop()
 		}
