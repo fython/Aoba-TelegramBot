@@ -161,7 +161,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	}
 
 	override fun onTextReceived(message: Message): Boolean {
-		if (isPlaying() && findParticipant(message.from) != null) {
+		if (isPlaying() && currentChooser.id == message.from.id) {
 			val number = message.text.toIntOrNull()
 			if (number != null) {
 				if (number >= max || number <= min) {
