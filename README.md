@@ -8,7 +8,7 @@ Use [rubenlagus/TelegramBots](https://github.com/rubenlagus/TelegramBots) as bot
 I made a wrapper to develop functions easily and quickly. 
 In the future I may separate framework from this repository and publish under Apache 2.0 Licenses.
 
-**Currently only support Chinese. It's not convenient.**
+**Currently only support Chinese. It's inconvenient to support multi-language.**
 
 ## What functions it has now?
 
