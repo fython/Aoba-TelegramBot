@@ -41,13 +41,21 @@ abstract class BaseTelegramBot(private val botKey: BotKey) : TelegramLongPolling
 	}
 
 	fun startEvent(chatId: Long, event: BaseEvent) {
-		findEvent(event.javaClass, chatId)?.stop()
+		try {
+			findEvent(event.javaClass, chatId)?.stop()
+		} catch (e : Exception) {
+			e.printStackTrace()
+		}
 		events["${event.javaClass.canonicalName}#$chatId"] = event
 		event.onStart()
 	}
 
 	fun <T : BaseEvent> stopEvent(chatId: Long, eventClazz: Class<T>) {
-		findEvent(eventClazz, chatId)?.stop()
+		try {
+			findEvent(eventClazz, chatId)?.stop()
+		} catch (e : Exception) {
+			e.printStackTrace()
+		}
 		events.remove("${eventClazz.canonicalName}#$chatId")
 	}
 
@@ -71,8 +79,12 @@ abstract class BaseTelegramBot(private val botKey: BotKey) : TelegramLongPolling
 				if (isAllowedReceiveOldMessage() || update.message.date < createTime) return@launch
 
 				for ((_, event) in events.filterKeys { key -> key.contains("#${msg.chatId}") }.toList()) {
-					if (event.handleMessage(msg)) {
-						return@launch
+					if (event.isAlive) {
+						if (event.handleMessage(msg)) {
+							return@launch
+						}
+					} else {
+						stopEvent(msg.chatId, event.javaClass)
 					}
 				}
 				if (handleMessage(msg)) {

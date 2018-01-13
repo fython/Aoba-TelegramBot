@@ -68,23 +68,32 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 			text = resources["GAME_OVER"].format(bombOwner.getDisplayName(), bombOwner.userName)
 		}
 		// 禁言套餐
-		RestrictChatMember().apply {
+		/*RestrictChatMember().apply {
 			chatId = this@DeliverBombGame.chatId.toString()
 			userId = bombOwner.id
 			canSendMessages = false
 			untilDate = (System.currentTimeMillis() / 1000L).toInt() + 60
-		}.let(bot::execute)
+		}.let(bot::execute)*/
 		stop()
 	}
 
 	override fun onGameInterrupted() {
+		println("onGameInterrupted")
 		timer.cancel()
-		bot.editMessageText(collectMessage!!) {
-			text = resources["GAME_PREPARE"].format(bombOwner.getDisplayName(), makeParticipantsIdList())
-			replyMarkup = InlineKeyboardMarkup()
-		}
 		bot.replyMessage(collectMessage) {
 			text = resources["GAME_INTERRUPTED"]
+		}
+	}
+
+	override fun onStop() {
+		super.onStop()
+		try {
+			bot.editMessageText(collectMessage!!) {
+				text = resources["GAME_PREPARE"].format(bombOwner.getDisplayName(), makeParticipantsIdList())
+				replyMarkup = InlineKeyboardMarkup()
+			}
+		} catch (e : TelegramApiException) {
+
 		}
 	}
 

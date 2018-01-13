@@ -60,10 +60,6 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	}
 
 	override fun onGameInterrupted() {
-		bot.editMessageText(collectMessage!!) {
-			text = resources["GAME_PREPARE"].format(currentChooser.getDisplayName(), makeParticipantsIdList())
-			replyMarkup = InlineKeyboardMarkup()
-		}
 		bot.replyMessage(collectMessage) {
 			text = resources["GAME_INTERRUPTED"]
 		}
@@ -78,13 +74,25 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 			text = resources["GAME_OVER"].format(currentChooser.getDisplayName(), currentChooser.userName)
 		}
 		// 禁言套餐
-		RestrictChatMember().apply {
+		/*RestrictChatMember().apply {
 			chatId = this@GuessNumberGame.chatId.toString()
 			userId = currentChooser.id
 			canSendMessages = false
 			untilDate = (System.currentTimeMillis() / 1000L).toInt() + 60
-		}.let(bot::execute)
+		}.let(bot::execute)*/
 		stop()
+	}
+
+	override fun onStop() {
+		super.onStop()
+		try {
+			bot.editMessageText(collectMessage!!) {
+				text = resources["GAME_PREPARE"].format(currentChooser.getDisplayName(), makeParticipantsIdList())
+				replyMarkup = InlineKeyboardMarkup()
+			}
+		} catch (e : TelegramApiException) {
+
+		}
 	}
 
 	override fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean = when (command) {
@@ -152,7 +160,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 					replyMarkup = collectMarkupInline
 				}
 			} catch (e: TelegramApiException) {
-				e.printStackTrace()
+				// e.printStackTrace()
 			}
 			true
 		} else {
