@@ -43,7 +43,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		}
 		collectMessage = bot.sendMessage(chatId.toString()) {
 			text = resources["GAME_PREPARE"].format(currentChooser.getDisplayName(), makeParticipantsIdList())
-			collectKeyButton.text = resources["GAME_JOIN"].format(participants.size)
+			collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
 			replyMarkup = collectMarkupInline
 		}
 	}
@@ -156,7 +156,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				// 更新召集消息
 				bot.editMessageText(collectMessage!!) {
 					text = resources["GAME_PREPARE"].format(currentChooser.getDisplayName(), makeParticipantsIdList())
-					collectKeyButton.text = resources["GAME_JOIN"].format(participants.size)
+					collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
 					replyMarkup = collectMarkupInline
 				}
 			} catch (e: TelegramApiException) {

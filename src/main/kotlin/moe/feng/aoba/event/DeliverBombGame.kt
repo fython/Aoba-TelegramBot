@@ -44,7 +44,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		}
 		collectMessage = bot.sendMessage(chatId.toString()) {
 			text = resources["GAME_PREPARE"].format(bombOwner.getDisplayName(), makeParticipantsIdList())
-			collectKeyButton.text = resources["GAME_JOIN"].format(participants.size)
+			collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
 			replyMarkup = collectMarkupInline
 		}
 	}
@@ -78,7 +78,6 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	}
 
 	override fun onGameInterrupted() {
-		println("onGameInterrupted")
 		timer.cancel()
 		bot.replyMessage(collectMessage) {
 			text = resources["GAME_INTERRUPTED"]
@@ -152,7 +151,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				// 更新召集消息
 				bot.editMessageText(collectMessage!!) {
 					text = resources["GAME_PREPARE"].format(bombOwner.getDisplayName(), makeParticipantsIdList())
-					collectKeyButton.text = resources["GAME_JOIN"].format(participants.size)
+					collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
 					replyMarkup = collectMarkupInline
 				}
 			} catch (e: TelegramApiException) {

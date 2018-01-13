@@ -1,6 +1,7 @@
 package moe.feng.aoba.event
 
 import moe.feng.aoba.bot.common.BaseTelegramBot
+import moe.feng.aoba.support.resourceBundle
 
 open class BaseGame(chatId: Long, bot: BaseTelegramBot) : BaseEvent(chatId, bot) {
 
@@ -34,5 +35,11 @@ open class BaseGame(chatId: Long, bot: BaseTelegramBot) : BaseEvent(chatId, bot)
 	}
 
 	fun isPlaying(): Boolean = isPlaying
+
+	companion object {
+
+		@JvmStatic val baseResources by resourceBundle("base_game")
+
+	}
 
 }
