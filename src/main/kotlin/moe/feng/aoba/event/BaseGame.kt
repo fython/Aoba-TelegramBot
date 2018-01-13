@@ -2,10 +2,16 @@ package moe.feng.aoba.event
 
 import moe.feng.aoba.bot.common.BaseTelegramBot
 import moe.feng.aoba.support.resourceBundle
+import org.telegram.telegrambots.api.objects.User
+import java.util.*
 
 open class BaseGame(chatId: Long, bot: BaseTelegramBot) : BaseEvent(chatId, bot) {
 
+	protected var currentPlayerIndex = 0
+	protected val currentPlayer: User get() = participants[currentPlayerIndex]
+
 	private var isPlaying = false
+	protected val random = Random(System.currentTimeMillis())
 
 	open fun onGameStart() {}
 

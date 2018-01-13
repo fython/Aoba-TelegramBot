@@ -17,9 +17,6 @@ import java.util.*
 
 class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot) {
 
-	private var currentChooserIndex = 0
-	private val currentChooser: User get() = participants[currentChooserIndex]
-
 	// 召集信息
 	private var collectMessage: Message? = null
 	private val collectMarkupInline = InlineKeyboardMarkup()
@@ -28,21 +25,17 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		collectMarkupInline.keyboard = mutableListOf(mutableListOf(this))
 	}
 
-	// 随机生成器
-	private lateinit var random: Random
-
 	private var min = 0
 	private var max = 0
 	private var correct = 0
 
 	override fun onStart() {
-		random = Random(System.currentTimeMillis())
 		// 发送召集信息
 		bot.sendSticker(chatId.toString()) {
 			sticker = Stickers.konataShoot.fileId
 		}
 		collectMessage = bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_PREPARE"].format(currentChooser.getDisplayName(), makeParticipantsIdList())
+			text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 			collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
 			replyMarkup = collectMarkupInline
 		}
@@ -54,7 +47,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		correct = random.nextInt(1 until max)
 		// 发送开始通知
 		bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_START"].format(participants.size, "@${currentChooser.userName}")
+			text = resources["GAME_START"].format(participants.size, "@${currentPlayer.userName}")
 		}
 		printCurrentTurn()
 	}
@@ -71,7 +64,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 			sticker = Stickers.killCat.fileId
 		}
 		bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_OVER"].format(currentChooser.getDisplayName(), currentChooser.userName)
+			text = resources["GAME_OVER"].format(currentPlayer.getDisplayName(), currentPlayer.userName)
 		}
 		// 禁言套餐
 		/*RestrictChatMember().apply {
@@ -87,7 +80,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		super.onStop()
 		try {
 			bot.editMessageText(collectMessage!!) {
-				text = resources["GAME_PREPARE"].format(currentChooser.getDisplayName(), makeParticipantsIdList())
+				text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 				replyMarkup = InlineKeyboardMarkup()
 			}
 		} catch (e : TelegramApiException) {
@@ -129,7 +122,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				}
 			} else {
 				bot.editMessageText(collectMessage!!) {
-					text = resources["GAME_PREPARE"].format(currentChooser.getDisplayName(), makeParticipantsIdList())
+					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 					replyMarkup = InlineKeyboardMarkup()
 				}
 				startGame()
@@ -139,7 +132,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 
 	private fun printCurrentTurn() {
 		bot.sendMessage(chatId.toString()) {
-			text = resources["GUESS_TURN_TEXT"].format("@" + currentChooser.userName, min, max)
+			text = resources["GUESS_TURN_TEXT"].format("@" + currentPlayer.userName, min, max)
 		}
 	}
 
@@ -155,7 +148,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 			try {
 				// 更新召集消息
 				bot.editMessageText(collectMessage!!) {
-					text = resources["GAME_PREPARE"].format(currentChooser.getDisplayName(), makeParticipantsIdList())
+					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 					collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
 					replyMarkup = collectMarkupInline
 				}
@@ -169,7 +162,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	}
 
 	override fun onTextReceived(message: Message): Boolean {
-		if (isPlaying() && currentChooser.id == message.from.id) {
+		if (isPlaying() && currentPlayer.id == message.from.id) {
 			val number = message.text.toIntOrNull()
 			if (number != null) {
 				if (number >= max || number <= min) {
@@ -191,8 +184,8 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 								text = resources["GUESS_TURN_SMALLER_THAN"].format(number)
 							}
 						}
-						currentChooserIndex += 1
-						currentChooserIndex %= participants.size
+						currentPlayerIndex += 1
+						currentPlayerIndex %= participants.size
 						printCurrentTurn()
 					}
 				}

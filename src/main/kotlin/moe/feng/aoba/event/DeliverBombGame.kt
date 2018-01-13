@@ -17,10 +17,6 @@ import java.util.*
 
 class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot) {
 
-	// 炸弹拥有者
-	private var bombOwnerIndex: Int = 0
-	private val bombOwner: User get() = participants[bombOwnerIndex]
-
 	// 召集信息
 	private var collectMessage: Message? = null
 	private val collectMarkupInline = InlineKeyboardMarkup()
@@ -29,21 +25,17 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		collectMarkupInline.keyboard = mutableListOf(mutableListOf(this))
 	}
 
-	// 随机生成器
-	private lateinit var random: Random
-
 	// 时间计数器
 	private var currentTime = 0
 	private val timer = Timer()
 
 	override fun onStart() {
-		random = Random(System.currentTimeMillis())
 		// 发送召集信息
 		bot.sendSticker(chatId.toString()) {
 			sticker = Stickers.catWithClock.fileId
 		}
 		collectMessage = bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_PREPARE"].format(bombOwner.getDisplayName(), makeParticipantsIdList())
+			text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 			collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
 			replyMarkup = collectMarkupInline
 		}
@@ -52,7 +44,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	override fun onGameStart() {
 		// 发送开始通知
 		bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_START"].format(participants.size, "@${bombOwner.userName}", MAX_GAME_TIME)
+			text = resources["GAME_START"].format(participants.size, "@${currentPlayer.userName}", MAX_GAME_TIME)
 		}
 		// 设定定时器
 		timer.scheduleAtFixedRate(TickTock(), 0, 1000)
@@ -65,7 +57,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 			sticker = Stickers.killCat.fileId
 		}
 		bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_OVER"].format(bombOwner.getDisplayName(), bombOwner.userName)
+			text = resources["GAME_OVER"].format(currentPlayer.getDisplayName(), currentPlayer.userName)
 		}
 		// 禁言套餐
 		/*RestrictChatMember().apply {
@@ -88,7 +80,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		super.onStop()
 		try {
 			bot.editMessageText(collectMessage!!) {
-				text = resources["GAME_PREPARE"].format(bombOwner.getDisplayName(), makeParticipantsIdList())
+				text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 				replyMarkup = InlineKeyboardMarkup()
 			}
 		} catch (e : TelegramApiException) {
@@ -130,7 +122,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				}
 			} else {
 				bot.editMessageText(collectMessage!!) {
-					text = resources["GAME_PREPARE"].format(bombOwner.getDisplayName(), makeParticipantsIdList())
+					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 					replyMarkup = InlineKeyboardMarkup()
 				}
 				startGame()
@@ -150,7 +142,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 			try {
 				// 更新召集消息
 				bot.editMessageText(collectMessage!!) {
-					text = resources["GAME_PREPARE"].format(bombOwner.getDisplayName(), makeParticipantsIdList())
+					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 					collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
 					replyMarkup = collectMarkupInline
 				}
@@ -168,11 +160,11 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				&& isPlaying()
 				&& findParticipant(message.from) != null) {
 			// 接收到参与者的表情
-			if (message.from.id != bombOwner.id) {
+			if (message.from.id != currentPlayer.id) {
 				bot.replyMessage(message) {
 					text = resources["BOMB_IS_NOT_IN_YOUR_HAND"]
 				}
-				bombOwnerIndex = indexOfParticipants(message.from)
+				currentPlayerIndex = indexOfParticipants(message.from)
 				stopGame()
 			} else {
 				val nextOwner: User = if (message.isReply) {
@@ -187,13 +179,13 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 					}
 					replyUser
 				} else {
-					participants[(bombOwnerIndex + random.nextInt(1..participants.size)) % participants.size]
+					participants[(currentPlayerIndex + random.nextInt(1..participants.size)) % participants.size]
 				}
 
 				if (random.nextInt(10) < 2) {
 					// 运气不佳
 					bot.sendMessage(chatId.toString()) {
-						text = resources["BOMB_DELIVERED_FAILED"].format("@" + bombOwner.userName)
+						text = resources["BOMB_DELIVERED_FAILED"].format("@" + currentPlayer.userName)
 					}
 					bot.sendSticker(chatId.toString()) {
 						sticker = Stickers.catWithClock.fileId
@@ -203,12 +195,12 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 					// 传到下一个参与者
 					bot.sendMessage(chatId.toString()) {
 						text = resources["BOMB_DELIVERED_TO"].format(
-								bombOwner.getDisplayName(),
+								currentPlayer.getDisplayName(),
 								nextOwner.getDisplayName(),
 								"@${nextOwner.userName}"
 						)
 					}
-					bombOwnerIndex = indexOfParticipants(nextOwner)
+					currentPlayerIndex = indexOfParticipants(nextOwner)
 				}
 			}
 			return true
