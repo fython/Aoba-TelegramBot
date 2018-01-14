@@ -122,7 +122,7 @@ class AobaBot : BaseTelegramBot(BotKeystore.botKey) {
 			if (message.chat.isGroupChat || message.chat.isSuperGroupChat) {
 				when {
 					args.isEmpty() -> {
-						val isAllowGame = GroupRulesDao.data.find { it.id == message.chatId }?.isAllowGame ?: false
+						val isAllowGame = message.chat.isAllowGame()
 						replyMessage(message) {
 							text = resources["ALLOW_GAME_STATUS"].format(
 									resources[if (isAllowGame) "ALLOW" else "DISALLOW"]
@@ -187,14 +187,24 @@ class AobaBot : BaseTelegramBot(BotKeystore.botKey) {
 			crossinline gameCreator: (message: Message) -> BaseGame
 	) {
 		listenCommand(openCommand) { _, message ->
-			val event = findEvent<T>(message.chatId)
-			if (event?.isAlive != true) {
-				startEvent(message.chatId, gameCreator(message))
-			} else {
-				sendMessage(message.chatId.toString()) {
-					text = playingWarningText
-					replyToMessageId = message.messageId
+			if (message.isGroupMessage || message.isSuperGroupMessage) {
+				if (message.chat.isAllowGame()) {
+					val event = findEvent<T>(message.chatId)
+					if (event?.isAlive != true) {
+						startEvent(message.chatId, gameCreator(message))
+					} else {
+						sendMessage(message.chatId.toString()) {
+							text = playingWarningText
+							replyToMessageId = message.messageId
+						}
+					}
+				} else {
+					replyMessage(message) {
+						text = resources["ALLOW_GAME_STATUS_WITHOUT_TIPS"]
+					}
 				}
+			} else {
+				replyMessage(message) { text = resources["COMMAND_NEED_GROUP"] }
 			}
 			true
 		}
