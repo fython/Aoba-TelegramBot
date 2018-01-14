@@ -4,6 +4,8 @@ import moe.feng.aoba.dao.common.KVDatabase
 
 object StatisticsDao : KVDatabase("statistics.json") {
 
+	var lastLaunchTime by longValue()
+
 	var chooseCommand by intValue()
 	var spaceCommand by intValue()
 	var replaceCommand by intValue()

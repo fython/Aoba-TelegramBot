@@ -1,6 +1,7 @@
 package moe.feng.aoba
 
 import moe.feng.aoba.bot.AobaBot
+import moe.feng.aoba.dao.StatisticsDao
 import org.telegram.telegrambots.ApiContextInitializer
 import org.telegram.telegrambots.TelegramBotsApi
 
@@ -13,6 +14,7 @@ object Launcher {
 		ApiContextInitializer.init()
 		val botsApi = TelegramBotsApi()
 
+		StatisticsDao.lastLaunchTime = System.currentTimeMillis()
 		botsApi.registerBot(aobaBot)
 	}
 
