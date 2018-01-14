@@ -1,12 +1,11 @@
 package moe.feng.aoba.bot
 
-import moe.feng.aoba.bot.common.BaseTelegramBot
-import moe.feng.aoba.bot.common.getDisplayName
-import moe.feng.aoba.bot.common.replyMessage
-import moe.feng.aoba.bot.common.sendMessage
+import moe.feng.aoba.bot.common.*
+import moe.feng.aoba.dao.GroupRulesDao
 import moe.feng.aoba.event.BaseGame
 import moe.feng.aoba.event.DeliverBombGame
 import moe.feng.aoba.event.GuessNumberGame
+import moe.feng.aoba.model.GroupRules
 import moe.feng.aoba.res.BotKeystore
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.isChinese
@@ -115,6 +114,54 @@ class AobaBot : BaseTelegramBot(BotKeystore.botKey) {
 						resources["REPLACE_NEED_REPLY_TO_MESSAGE_HAVE_ARGS"]
 					}
 				}
+			}
+			true
+		}
+
+		listenCommand("/allow_game") { args, message ->
+			if (message.chat.isGroupChat || message.chat.isSuperGroupChat) {
+				when {
+					args.isEmpty() -> {
+						val isAllowGame = GroupRulesDao.data.find { it.id == message.chatId }?.isAllowGame ?: false
+						replyMessage(message) {
+							text = resources["ALLOW_GAME_STATUS"].format(
+									resources[if (isAllowGame) "ALLOW" else "DISALLOW"]
+							)
+							enableMarkdown(true)
+						}
+					}
+					args.size == 1 -> {
+						if (hasAdminAccess(message.from, message.chatId)) {
+							val value = when (args[0].toLowerCase()) { "true" -> true; "false" -> false; else -> null }
+							if (value == null) {
+								replyMessage(message) {
+									text = resources["ALLOW_GAME_WRONG_ARGS"]
+									enableMarkdown(true)
+								}
+							} else {
+								val groupRules = GroupRulesDao.data.find { it.id == message.chatId }
+										?: GroupRules(message.chatId).apply { GroupRulesDao.data.add(this) }
+								groupRules.isAllowGame = value
+								GroupRulesDao.scheduleSave()
+								replyMessage(message) {
+									text = resources["ALLOW_GAME_MODIFIED_STATUS"].format(
+											resources[if (value) "ALLOW" else "DISALLOW"]
+									)
+								}
+							}
+						} else {
+							replyMessage(message) { text = resources["COMMAND_NEED_ADMIN"] }
+						}
+					}
+					else -> {
+						replyMessage(message) {
+							text = resources["ALLOW_GAME_WRONG_ARGS"]
+							enableMarkdown(true)
+						}
+					}
+				}
+			} else {
+				replyMessage(message) { text = resources["COMMAND_NEED_GROUP"] }
 			}
 			true
 		}
