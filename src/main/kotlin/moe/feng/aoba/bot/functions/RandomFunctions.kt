@@ -13,11 +13,12 @@ fun AobaBot.registerHelpMeChooseFunction() {
 		if (args.isEmpty()) {
 			replyMessage(message) {
 				text = AobaBot.resources["HELP_ME_CHOOSE_HELP"]
+				enableMarkdown(true)
 			}
 		} else {
 			StatisticsDao.chooseCommand++
 			sendChatAction(message.chatId.toString(), ActionType.TYPING)
-			Thread.sleep(3000)
+			Thread.sleep(2000)
 			replyMessage(message) {
 				text = AobaBot.resources["HELP_ME_CHOOSE_RESULT"].format(args.randomOne())
 			}
