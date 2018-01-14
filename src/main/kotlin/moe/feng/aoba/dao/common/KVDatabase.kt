@@ -154,7 +154,7 @@ open class KVDatabase(private val fileName: String = "default.json") : TableProv
 		override fun getValue(thisRef: KVDatabase, property: KProperty<*>): MutableList<E> {
 			if (getKey(property) !in thisRef.table.keys
 					|| !List::class.java.isInstance(thisRef.table[getKey(property)])
-					|| !elementClass.isInstance((thisRef.table[getKey(property)] as MutableList<*>)[0])) {
+					|| !elementClass.isInstance((thisRef.table[getKey(property)] as MutableList<*>).getOrNull(0))) {
 				thisRef.table[getKey(property)] =
 						(thisRef.table[getKey(property)]?.toJson() ?: defaultModelJson)
 								.toObject<MutableList<Any>>()
