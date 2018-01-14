@@ -1,6 +1,7 @@
 package moe.feng.aoba.event
 
 import moe.feng.aoba.bot.common.*
+import moe.feng.aoba.dao.StatisticsDao
 import moe.feng.aoba.res.BotKeystore
 import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
@@ -42,6 +43,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	}
 
 	override fun onGameStart() {
+		StatisticsDao.guessNumberGame++
 		min = 0
 		max = 100 + (participants.size / 2) * 50
 		correct = random.nextInt(1 until max)

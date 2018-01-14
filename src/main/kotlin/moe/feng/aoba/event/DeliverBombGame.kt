@@ -1,6 +1,7 @@
 package moe.feng.aoba.event
 
 import moe.feng.aoba.bot.common.*
+import moe.feng.aoba.dao.StatisticsDao
 import moe.feng.aoba.res.BotKeystore
 import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
@@ -42,6 +43,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	}
 
 	override fun onGameStart() {
+		StatisticsDao.bombGame++
 		// 发送开始通知
 		bot.sendMessage(chatId.toString()) {
 			text = resources["GAME_START"].format(participants.size, "@${currentPlayer.userName}", MAX_GAME_TIME)

@@ -5,12 +5,14 @@ import moe.feng.aoba.bot.AobaBot.Companion.resources
 import moe.feng.aoba.bot.common.getDisplayName
 import moe.feng.aoba.bot.common.replyMessage
 import moe.feng.aoba.bot.common.sendMessage
+import moe.feng.aoba.dao.StatisticsDao
 import moe.feng.aoba.support.get
 
 fun AobaBot.registerReplaceFunctions() {
 	listenCommand("/replace") { args, message ->
 		if (message.isReply && message.replyToMessage.hasText()) {
 			if (args.size == 2) {
+				StatisticsDao.replaceCommand++
 				sendMessage(message.chatId.toString()) {
 					text = resources["REPLACE_REPLY_RESULT"].format(
 							message.from.getDisplayName(),

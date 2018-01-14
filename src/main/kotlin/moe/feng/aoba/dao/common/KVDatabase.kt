@@ -53,7 +53,6 @@ open class KVDatabase(private val fileName: String = "default.json") : TableProv
 	fun load() {
 		val file = File(fileName)
 		if (file.isFile) {
-			println(file.absolutePath)
 			try {
 				file.inputStream().let { BufferedInputStream(it) }.apply {
 					table = readBytes().toString(StandardCharsets.UTF_8).toObject<TableProvider>().table
@@ -70,7 +69,6 @@ open class KVDatabase(private val fileName: String = "default.json") : TableProv
 		if (!file.isFile) {
 			file.createNewFile()
 		}
-		println(file.absolutePath)
 		try {
 			file.outputStream().let { BufferedOutputStream(it) }.apply {
 				write(mapOf("table" to table).toJson().toByteArray())

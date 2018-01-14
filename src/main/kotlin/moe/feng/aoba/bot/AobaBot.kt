@@ -15,6 +15,7 @@ class AobaBot : BaseTelegramBot(BotKeystore.botKey) {
 		registerHelpFunctions()
 		registerTextSpaceFunctions()
 		registerReplaceFunctions()
+		registerHelpMeChooseFunction()
 
 		registerGameOptions()
 		registerGame<DeliverBombGame>(

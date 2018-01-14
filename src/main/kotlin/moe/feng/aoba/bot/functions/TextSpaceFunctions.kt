@@ -4,11 +4,13 @@ import moe.feng.aoba.bot.AobaBot
 import moe.feng.aoba.bot.common.getDisplayName
 import moe.feng.aoba.bot.common.replyMessage
 import moe.feng.aoba.bot.common.sendMessage
+import moe.feng.aoba.dao.StatisticsDao
 import moe.feng.aoba.support.isChinese
 
 fun AobaBot.registerTextSpaceFunctions() {
 	listenCommand("/add_space") { _, message ->
 		if (message.isReply && message.replyToMessage.hasText()) {
+			StatisticsDao.spaceCommand++
 			var newText = message.replyToMessage.text.trim()
 			for ((i, c) in newText.withIndex().reversed()) {
 				if (c.isChinese() || newText.getOrElse(i - 1, {'_'}).isChinese()) {
@@ -27,6 +29,7 @@ fun AobaBot.registerTextSpaceFunctions() {
 	}
 	listenCommand("/remove_space") { _, message ->
 		if (message.isReply && message.replyToMessage.hasText()) {
+			StatisticsDao.spaceCommand++
 			var newText = message.replyToMessage.text.trim()
 			for ((i, c) in newText.withIndex().reversed()) {
 				if (c == ' '
