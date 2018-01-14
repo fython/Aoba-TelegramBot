@@ -26,7 +26,8 @@ fun AobaBot.registerHelpFunctions() {
 					/replace - 替换一句话中的关键词为另一个词
 					/add_space - 每个汉字都使用空格隔开
 					/remove_space - 去掉汉字间的空格
-					/allow_space - 查询/设置当前群组是否允许发起游戏（仅管理员可设置）
+					/allow_game - 查询/设置当前群组是否允许发起游戏（仅管理员可设置）
+					/bot_statistics - 查看机器人全局统计数据
 
 					已支持的游戏（规则请调用命令后查看）：
 					/bomb_game - 开始传炸弹游戏
