@@ -32,6 +32,7 @@ fun AobaBot.registerHelpFunctions() {
 					已支持的游戏（规则请调用命令后查看）：
 					/bomb_game - 开始传炸弹游戏
 					/guess_number_game - 开始猜数字游戏
+					/minesweeper_game - 开始扫雷游戏
 					""".trimIndent()
 			} else {
 				"群组内帮助已关闭，请私聊机器人咨询。"

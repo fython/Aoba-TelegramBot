@@ -31,8 +31,10 @@ open class BaseGame(chatId: Long, bot: BaseTelegramBot) : BaseEvent(chatId, bot)
 	}
 
 	fun startGame() {
-		isPlaying = true
-		onGameStart()
+		if (!isPlaying) {
+			isPlaying = true
+			onGameStart()
+		}
 	}
 
 	fun stopGame() {

@@ -19,6 +19,7 @@ fun AobaBot.registerStatisticsFunctions() {
 					StatisticsDao.joinedGroups.size,
 					StatisticsDao.bombGame,
 					StatisticsDao.guessNumberGame,
+					StatisticsDao.minesweeperGame,
 					/* Last launch time = */ SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date(StatisticsDao.lastLaunchTime)),
 					(System.currentTimeMillis() - StatisticsDao.lastLaunchTime).let {
 						val s = it / 1000L % 60

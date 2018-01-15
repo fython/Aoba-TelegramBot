@@ -5,6 +5,7 @@ import moe.feng.aoba.bot.functions.*
 import moe.feng.aoba.dao.StatisticsDao
 import moe.feng.aoba.event.DeliverBombGame
 import moe.feng.aoba.event.GuessNumberGame
+import moe.feng.aoba.event.MinesweeperGame
 import moe.feng.aoba.res.BotKeystore
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.resourceBundle
@@ -30,6 +31,11 @@ class AobaBot : BaseTelegramBot(BotKeystore.botKey) {
 				"/guess_number_game",
 				resources["GUESS_NUMBER_GAME_IS_PLAYING"],
 				{ message ->  GuessNumberGame(message.chatId, this).apply { participants += message.from } }
+		)
+		registerGame<MinesweeperGame>(
+				"/minesweeper_game",
+				resources["MINESWEEPER_GAME_IS_PLAYING"],
+				{ message -> MinesweeperGame(message.chatId, this).apply { participants += message.from } }
 		)
 	}
 

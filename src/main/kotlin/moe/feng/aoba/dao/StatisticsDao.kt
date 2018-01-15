@@ -12,6 +12,7 @@ object StatisticsDao : KVDatabase("statistics.json") {
 
 	var bombGame by intValue()
 	var guessNumberGame by intValue()
+	var minesweeperGame by intValue()
 
 	var joinedGroups by listValue<Long>()
 
