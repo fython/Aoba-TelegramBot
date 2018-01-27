@@ -5,6 +5,7 @@ import moe.feng.aoba.dao.StatisticsDao
 import moe.feng.aoba.res.BotKeystore
 import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
+import moe.feng.aoba.support.limitIn
 import moe.feng.aoba.support.nextInt
 import moe.feng.aoba.support.resourceBundle
 import org.telegram.telegrambots.api.methods.groupadministration.RestrictChatMember
@@ -44,9 +45,6 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 
 	override fun onGameStart() {
 		StatisticsDao.guessNumberGame++
-		min = 0
-		max = 100 + (participants.size / 2) * 50
-		correct = random.nextInt(1 until max)
 		// 发送开始通知
 		bot.sendMessage(chatId.toString()) {
 			text = resources["GAME_START"].format(participants.size, "@${currentPlayer.userName}")
@@ -93,11 +91,11 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	override fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean = when (command) {
 		// 接收游戏开始命令
 		"/guess_number_game_start" -> {
-			onStartCommand(message)
+			onStartCommand(args, message)
 			true
 		}
 		"/guess_number_game_start@${BotKeystore.botKey.username}" -> {
-			onStartCommand(message)
+			onStartCommand(args, message)
 			true
 		}
 		// 接受游戏停止命令
@@ -112,7 +110,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		else -> false
 	}
 
-	private fun onStartCommand(message: Message) {
+	private fun onStartCommand(args: List<String>, message: Message) {
 		if (isPlaying()) {
 			bot.replyMessage(message) {
 				text = resources["GAME_ALREADY_START"]
@@ -123,6 +121,9 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 					text = resources["GAME_NEED_MORE_PARTICIPANTS"]
 				}
 			} else {
+				min = 0
+				max = (args.getOrNull(0)?.toIntOrNull() ?: 150 + (participants.size / 2) * 100).limitIn(50..100000)
+				correct = random.nextInt(1 until max)
 				bot.editMessageText(collectMessage!!) {
 					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 					replyMarkup = InlineKeyboardMarkup()

@@ -2,6 +2,11 @@
 /.idea
 /build
 /out
+/.settings
+/.vscode
+/bin
 keystore.properties
 group_rules.json
 statistics.json
+.project
+.classpath
