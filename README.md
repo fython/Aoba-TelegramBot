@@ -14,10 +14,19 @@ In the future I may separate framework from this repository and publish under Ap
 
 It's still in unstable development.
 
-Now it has two games you can play in group:
+Functions:
 
-- Guess number
-- Deliver bomb (Sticker)
+- `/replace` : Replace a keyword with another word in a sentence
+- `/choose` : Random choose a element in a list
+- `/add_space` / `/remove_space` : Add or remove spaces between chinese characters
+- `/allow_game` : Enable or disable bot games in a group (Need administrators)
+- `/bot_statistics` : Show bot statistics and running status
+
+Now it has three games you can play in group:
+
+- `/guess_number_game` : Guess number
+- `/bomb_game` : Deliver bomb (Sticker)
+- `/minesweeper_game` : Minesweeper
 
 ## Configure Bot keystore
 
@@ -27,6 +36,18 @@ Now it has two games you can play in group:
 BOT_TOKEN=123456:XXXX
 BOT_USERNAME=sb_bot
 ```
+
+## Build and run
+
+Intellij IDEA is optional. But I recommend use it to develop.
+
+Use Gradle to build and run (on Linux) :
+
+```bash
+./gradlew run
+```
+
+For Windows users, you can also run `gradlew.bat` instead. 
 
 ## Contact me
 
