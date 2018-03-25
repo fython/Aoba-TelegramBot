@@ -5,9 +5,10 @@ import moe.feng.aoba.api.RemoteYeelightApi
 import moe.feng.aoba.bot.AobaBot
 import moe.feng.aoba.bot.common.editMessageText
 import moe.feng.aoba.bot.common.replyMessage
+import moe.feng.aoba.res.Stickers
 
 fun AobaBot.registerYeelightFunctions() {
-	listenCommand("/toggle_light") { _, message ->
+	listenSticker(Stickers.toggle) { message ->
 		async {
 			if (!RemoteYeelightApi.isOnline()) {
 				replyMessage(message) {
