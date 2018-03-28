@@ -21,14 +21,6 @@ object RemoteYeelightApi {
 				reader = BufferedReader(InputStreamReader(socket!!.getInputStream()))
 			}
 		}
-		thread {
-			while (true) {
-				Thread.sleep(1000)
-				if (socket?.isClosed == true) {
-					socket = null
-				}
-			}
-		}
 	}
 
 	fun isOnline() = socket?.isClosed == false
@@ -39,7 +31,11 @@ object RemoteYeelightApi {
 			outputStream.write("toggle\r\n".toByteArray())
 			outputStream.flush()
 		}
-		return reader?.readLine()
+		val result = reader?.readLine()
+		if (result == null) {
+			socket = null
+		}
+		return result
 	}
 
 }

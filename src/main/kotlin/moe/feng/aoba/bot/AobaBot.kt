@@ -7,6 +7,7 @@ import moe.feng.aoba.event.DeliverBombGame
 import moe.feng.aoba.event.GuessNumberGame
 import moe.feng.aoba.event.MinesweeperGame
 import moe.feng.aoba.res.BotKeystore
+import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.resourceBundle
 import org.telegram.telegrambots.api.objects.Chat
@@ -38,6 +39,21 @@ class AobaBot : BaseTelegramBot(BotKeystore.botKey) {
 				resources["MINESWEEPER_GAME_IS_PLAYING"],
 				{ message -> MinesweeperGame(message.chatId, this).apply { participants += message.from } }
 		)
+
+		listenSticker(Stickers.munikoQuestion) { msg ->
+			sendSticker(msg.chatId.toString()) {
+				replyToMessageId = msg.messageId
+				sticker = Stickers.invertedQuestion.fileId
+			}
+			true
+		}
+		listenSticker(Stickers.invertedQuestion) { msg ->
+			sendSticker(msg.chatId.toString()) {
+				replyToMessageId = msg.messageId
+				sticker = Stickers.munikoQuestion.fileId
+			}
+			true
+		}
 	}
 
 	override fun isAllowedBeUsed(chat: Chat): Boolean = true

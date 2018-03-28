@@ -15,6 +15,8 @@ object Stickers {
 	val killCat by sticker()
 	val konataShoot by sticker()
 	val toggle by sticker()
+	val munikoQuestion by sticker()
+	val invertedQuestion by sticker()
 
 	private fun sticker(name: String? = null) = StickerProperty(name)
 
