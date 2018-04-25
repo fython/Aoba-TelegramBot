@@ -40,13 +40,6 @@ class AobaBot : BaseTelegramBot(BotKeystore.botKey) {
 				{ message -> MinesweeperGame(message.chatId, this).apply { participants += message.from } }
 		)
 
-		listenSticker(Stickers.munikoQuestion) { msg ->
-			sendSticker(msg.chatId.toString()) {
-				replyToMessageId = msg.messageId
-				sticker = Stickers.invertedQuestion.fileId
-			}
-			true
-		}
 		listenSticker(Stickers.invertedQuestion) { msg ->
 			sendSticker(msg.chatId.toString()) {
 				replyToMessageId = msg.messageId
