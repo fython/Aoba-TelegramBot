@@ -9,7 +9,7 @@ import moe.feng.aoba.dao.GroupRulesDao
 import moe.feng.aoba.event.BaseGame
 import moe.feng.aoba.model.GroupRules
 import moe.feng.aoba.support.get
-import org.telegram.telegrambots.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.Message
 
 fun AobaBot.registerGameOptions() {
 	listenCommand("/allow_game") { args, message ->

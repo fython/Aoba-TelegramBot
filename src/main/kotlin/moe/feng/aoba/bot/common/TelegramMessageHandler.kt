@@ -1,7 +1,7 @@
 package moe.feng.aoba.bot.common
 
 import org.apache.tools.ant.types.Commandline
-import org.telegram.telegrambots.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.Message
 
 interface TelegramMessageHandler {
 

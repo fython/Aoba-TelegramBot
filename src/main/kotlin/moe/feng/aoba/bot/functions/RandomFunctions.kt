@@ -6,7 +6,7 @@ import moe.feng.aoba.bot.common.sendChatAction
 import moe.feng.aoba.dao.StatisticsDao
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.randomOne
-import org.telegram.telegrambots.api.methods.ActionType
+import org.telegram.telegrambots.meta.api.methods.ActionType
 
 fun AobaBot.registerHelpMeChooseFunction() {
 	listenCommand("/choose") { args, message ->

@@ -1,8 +1,8 @@
 package moe.feng.aoba.bot.common
 
 import moe.feng.aoba.dao.GroupRulesDao
-import org.telegram.telegrambots.api.objects.Chat
-import org.telegram.telegrambots.api.objects.User
+import org.telegram.telegrambots.meta.api.objects.Chat
+import org.telegram.telegrambots.meta.api.objects.User
 
 fun User.getDisplayName(): String = (firstName + " " + (lastName ?: "")).trim()
 

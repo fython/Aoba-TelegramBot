@@ -7,13 +7,12 @@ import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.nextInt
 import moe.feng.aoba.support.resourceBundle
-import org.telegram.telegrambots.api.methods.groupadministration.RestrictChatMember
-import org.telegram.telegrambots.api.objects.CallbackQuery
-import org.telegram.telegrambots.api.objects.Message
-import org.telegram.telegrambots.api.objects.User
-import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup
-import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton
-import org.telegram.telegrambots.exceptions.TelegramApiException
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
+import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.User
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import java.util.*
 
 class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot) {
@@ -32,9 +31,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 
 	override fun onStart() {
 		// 发送召集信息
-		bot.sendSticker(chatId.toString()) {
-			sticker = Stickers.catWithClock.fileId
-		}
+		bot.sendSticker(chatId.toString(), stickerId = Stickers.catWithClock.fileId)
 		collectMessage = bot.sendMessage(chatId.toString()) {
 			text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 			collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
@@ -55,9 +52,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	override fun onGameOver() {
 		timer.cancel()
 		// 游戏结束判定输家
-		bot.sendSticker(chatId.toString()) {
-			sticker = Stickers.killCat.fileId
-		}
+		bot.sendSticker(chatId.toString(), stickerId = Stickers.killCat.fileId)
 		bot.sendMessage(chatId.toString()) {
 			text = resources["GAME_OVER"].format(currentPlayer.getDisplayName(), currentPlayer.userName)
 		}
@@ -189,8 +184,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 					bot.sendMessage(chatId.toString()) {
 						text = resources["BOMB_DELIVERED_FAILED"].format("@" + currentPlayer.userName)
 					}
-					bot.sendSticker(chatId.toString()) {
-						sticker = Stickers.catWithClock.fileId
+					bot.sendSticker(chatId.toString(), stickerId = Stickers.catWithClock.fileId) {
 						replyToMessageId = message.messageId
 					}
 				} else {

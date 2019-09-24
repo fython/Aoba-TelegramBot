@@ -1,6 +1,8 @@
 package moe.feng.aoba.bot.functions
 
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import moe.feng.aoba.api.RemoteYeelightApi
 import moe.feng.aoba.bot.AobaBot
 import moe.feng.aoba.bot.common.editMessageText
@@ -9,7 +11,7 @@ import moe.feng.aoba.res.Stickers
 
 fun AobaBot.registerYeelightFunctions() {
 	listenSticker(Stickers.toggle) { message ->
-		async {
+		CoroutineScope(Dispatchers.IO).async {
 			if (!RemoteYeelightApi.isOnline()) {
 				replyMessage(message) {
 					text = "台灯不在线ww"

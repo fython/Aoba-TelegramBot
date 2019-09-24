@@ -2,9 +2,9 @@ package moe.feng.aoba.event
 
 import moe.feng.aoba.bot.common.BaseTelegramBot
 import moe.feng.aoba.bot.common.TelegramMessageHandler
-import org.telegram.telegrambots.api.objects.CallbackQuery
-import org.telegram.telegrambots.api.objects.Message
-import org.telegram.telegrambots.api.objects.User
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
+import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.User
 
 open class BaseEvent(val chatId: Long, protected val bot: BaseTelegramBot) : TelegramMessageHandler {
 

@@ -1,8 +1,6 @@
 package moe.feng.aoba.dao.common
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.*
 import moe.feng.aoba.support.classOf
 import moe.feng.aoba.support.toJson
 import moe.feng.aoba.support.toObject
@@ -82,7 +80,9 @@ open class KVDatabase(private val fileName: String = "default.json") : TableProv
 	@Synchronized
 	fun scheduleSave() {
 		saveTask?.cancel()
-		saveTask = async(CommonPool) { save() }
+		saveTask = CoroutineScope(Dispatchers.IO).async {
+			save()
+		}
 	}
 
 	protected class IntProperty internal constructor(key: String? = null, defaultValue: Int = 0)

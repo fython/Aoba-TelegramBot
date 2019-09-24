@@ -7,11 +7,11 @@ import moe.feng.aoba.res.BotKeystore
 import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.resourceBundle
-import org.telegram.telegrambots.api.objects.CallbackQuery
-import org.telegram.telegrambots.api.objects.Message
-import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup
-import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton
-import org.telegram.telegrambots.exceptions.TelegramApiException
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
+import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 
 class MinesweeperGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot) {
 
@@ -38,9 +38,7 @@ class MinesweeperGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 
 	override fun onStart() {
 		// 发送召集信息
-		bot.sendSticker(chatId.toString()) {
-			sticker = Stickers.catWithClock.fileId
-		}
+		bot.sendSticker(chatId.toString(), stickerId = Stickers.catWithClock.fileId)
 		collectMessage = bot.sendMessage(chatId.toString()) {
 			text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 			collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)

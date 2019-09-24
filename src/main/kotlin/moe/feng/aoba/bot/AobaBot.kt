@@ -10,10 +10,12 @@ import moe.feng.aoba.res.BotKeystore
 import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.resourceBundle
-import org.telegram.telegrambots.api.objects.Chat
-import org.telegram.telegrambots.api.objects.Message
+import org.telegram.telegrambots.bots.DefaultBotOptions
+import org.telegram.telegrambots.meta.api.objects.Chat
+import org.telegram.telegrambots.meta.api.objects.Message
 
-class AobaBot : BaseTelegramBot(BotKeystore.botKey) {
+class AobaBot(private val botOptions: DefaultBotOptions = DefaultBotOptions())
+	 : BaseTelegramBot(BotKeystore.botKey, botOptions) {
 
 	init {
 		registerHelpFunctions()
@@ -43,7 +45,7 @@ class AobaBot : BaseTelegramBot(BotKeystore.botKey) {
 		listenSticker(Stickers.invertedQuestion) { msg ->
 			sendSticker(msg.chatId.toString()) {
 				replyToMessageId = msg.messageId
-				sticker = Stickers.munikoQuestion.fileId
+				setSticker(Stickers.munikoQuestion.fileId)
 			}
 			true
 		}

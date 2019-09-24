@@ -8,14 +8,11 @@ import moe.feng.aoba.support.get
 import moe.feng.aoba.support.limitIn
 import moe.feng.aoba.support.nextInt
 import moe.feng.aoba.support.resourceBundle
-import org.telegram.telegrambots.api.methods.groupadministration.RestrictChatMember
-import org.telegram.telegrambots.api.objects.CallbackQuery
-import org.telegram.telegrambots.api.objects.Message
-import org.telegram.telegrambots.api.objects.User
-import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup
-import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton
-import org.telegram.telegrambots.exceptions.TelegramApiException
-import java.util.*
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
+import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 
 class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot) {
 
@@ -33,9 +30,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 
 	override fun onStart() {
 		// 发送召集信息
-		bot.sendSticker(chatId.toString()) {
-			sticker = Stickers.konataShoot.fileId
-		}
+		bot.sendSticker(chatId.toString(), stickerId = Stickers.konataShoot.fileId)
 		collectMessage = bot.sendMessage(chatId.toString()) {
 			text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
 			collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
@@ -60,9 +55,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 
 	override fun onGameOver() {
 		// 游戏结束判定输家
-		bot.sendSticker(chatId.toString()) {
-			sticker = Stickers.killCat.fileId
-		}
+		bot.sendSticker(chatId.toString(), stickerId = Stickers.killCat.fileId)
 		bot.sendMessage(chatId.toString()) {
 			text = resources["GAME_OVER"].format(currentPlayer.getDisplayName(), currentPlayer.userName)
 		}

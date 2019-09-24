@@ -1,15 +1,21 @@
 package moe.feng.aoba.bot.common
 
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import moe.feng.aoba.event.BaseEvent
-import org.telegram.telegrambots.api.objects.Chat
-import org.telegram.telegrambots.api.objects.Message
-import org.telegram.telegrambots.api.objects.Update
-import org.telegram.telegrambots.api.objects.stickers.Sticker
+import org.telegram.telegrambots.bots.DefaultBotOptions
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.api.objects.Chat
+import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.stickers.Sticker
 
-abstract class BaseTelegramBot(private val botKey: BotKey) : TelegramLongPollingBot(), TelegramMessageHandler {
+abstract class BaseTelegramBot(
+		private val botKey: BotKey,
+		private val botOptions: DefaultBotOptions = DefaultBotOptions()
+) : TelegramLongPollingBot(botOptions), TelegramMessageHandler, CoroutineScope by MainScope() {
 
 	private val commandsCallbacks: MutableMap<String, (List<String>, Message) -> Boolean> = mutableMapOf()
 	private val textKeywordsCallbacks: MutableList<Pair<Array<out String>, (Message) -> Boolean>> = mutableListOf()
@@ -21,7 +27,7 @@ abstract class BaseTelegramBot(private val botKey: BotKey) : TelegramLongPolling
 
 	fun listenCommand(command: String, callback: (args: List<String>, message: Message) -> Boolean) {
 		commandsCallbacks += command to callback
-		commandsCallbacks += (command + "@" + botUsername) to callback
+		commandsCallbacks += "$command@$botUsername" to callback
  	}
 
 	fun listenKeywords(vararg keywords: String, callback: (message: Message) -> Boolean) {
@@ -70,8 +76,8 @@ abstract class BaseTelegramBot(private val botKey: BotKey) : TelegramLongPolling
 
 	open fun isAllowedReceiveOldMessage(): Boolean = true
 
-	override final fun onUpdateReceived(update: Update?) {
-		launch(CommonPool) {
+	final override fun onUpdateReceived(update: Update?) {
+		launch(Dispatchers.IO) {
 			if (update?.hasMessage() == true) {
 				val msg = update.message
 
@@ -91,9 +97,9 @@ abstract class BaseTelegramBot(private val botKey: BotKey) : TelegramLongPolling
 					return@launch
 				}
 			} else if (update?.hasCallbackQuery() == true) {
-				events.forEach { _, event ->
+				for ((_, event) in events) {
 					if (event.onCallbackQuery(update.callbackQuery)) {
-						return@forEach
+						continue
 					}
 				}
 			}
