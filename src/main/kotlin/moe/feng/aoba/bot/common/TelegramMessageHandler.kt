@@ -5,13 +5,13 @@ import org.telegram.telegrambots.meta.api.objects.Message
 
 interface TelegramMessageHandler {
 
-	fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean
+	suspend fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean
 
-	fun onTextReceived(message: Message): Boolean
+	suspend fun onTextReceived(message: Message): Boolean
 
-	fun onStickerReceived(message: Message): Boolean
+	suspend fun onStickerReceived(message: Message): Boolean
 
-	fun handleMessage(msg: Message): Boolean {
+	suspend fun handleMessage(msg: Message): Boolean {
 		if (msg.hasText()) {
 			if (msg.text.startsWith("/")) {
 				val commands = Commandline.translateCommandline(msg.text)

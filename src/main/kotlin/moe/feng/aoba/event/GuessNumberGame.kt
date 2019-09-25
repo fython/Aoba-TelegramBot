@@ -81,7 +81,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		}
 	}
 
-	override fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean = when (command) {
+	override suspend fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean = when (command) {
 		// 接收游戏开始命令
 		"/guess_number_game_start" -> {
 			onStartCommand(args, message)
@@ -157,7 +157,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		}
 	}
 
-	override fun onTextReceived(message: Message): Boolean {
+	override suspend fun onTextReceived(message: Message): Boolean {
 		if (isPlaying() && currentPlayer.id == message.from.id) {
 			val number = message.text.toIntOrNull()
 			if (number != null) {

@@ -25,15 +25,15 @@ open class BaseEvent(val chatId: Long, protected val bot: BaseTelegramBot) : Tel
 		}
 	}
 
-	override fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean {
+	override suspend fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean {
 		return false
 	}
 
-	override fun onTextReceived(message: Message): Boolean {
+	override suspend fun onTextReceived(message: Message): Boolean {
 		return false
 	}
 
-	override fun onStickerReceived(message: Message): Boolean {
+	override suspend fun onStickerReceived(message: Message): Boolean {
 		return false
 	}
 

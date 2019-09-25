@@ -85,26 +85,28 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		}
 	}
 
-	override fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean = when (command) {
-		// 接收游戏开始命令
-		"/bomb_game_start" -> {
-			onStartCommand(message)
-			true
+	override suspend fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean {
+		return when (command) {
+			// 接收游戏开始命令
+			"/bomb_game_start" -> {
+				onStartCommand(message)
+				true
+			}
+			"/bomb_game_start@${BotKeystore.botKey.username}" -> {
+				onStartCommand(message)
+				true
+			}
+			// 接受游戏停止命令
+			"/bomb_game_stop" -> {
+				bot.stopEvent<DeliverBombGame>(chatId)
+				true
+			}
+			"/bomb_game_stop@${BotKeystore.botKey.username}" -> {
+				bot.stopEvent<DeliverBombGame>(chatId)
+				true
+			}
+			else -> false
 		}
-		"/bomb_game_start@${BotKeystore.botKey.username}" -> {
-			onStartCommand(message)
-			true
-		}
-		// 接受游戏停止命令
-		"/bomb_game_stop" -> {
-			bot.stopEvent<DeliverBombGame>(chatId)
-			true
-		}
-		"/bomb_game_stop@${BotKeystore.botKey.username}" -> {
-			bot.stopEvent<DeliverBombGame>(chatId)
-			true
-		}
-		else -> false
 	}
 
 	private fun onStartCommand(message: Message) {
@@ -152,7 +154,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		}
 	}
 
-	override fun onStickerReceived(message: Message): Boolean {
+	override suspend fun onStickerReceived(message: Message): Boolean {
 		if (message.sticker.fileId == Stickers.catWithClock.fileId
 				&& isPlaying()
 				&& findParticipant(message.from) != null) {

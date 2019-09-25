@@ -17,24 +17,24 @@ abstract class BaseTelegramBot(
 		private val botOptions: DefaultBotOptions = DefaultBotOptions()
 ) : TelegramLongPollingBot(botOptions), TelegramMessageHandler, CoroutineScope by MainScope() {
 
-	private val commandsCallbacks: MutableMap<String, (List<String>, Message) -> Boolean> = mutableMapOf()
-	private val textKeywordsCallbacks: MutableList<Pair<Array<out String>, (Message) -> Boolean>> = mutableListOf()
-	private val stickersCallbacks: MutableList<Pair<Sticker, (Message) -> Boolean>> = mutableListOf()
+	private val commandsCallbacks: MutableMap<String, suspend (List<String>, Message) -> Boolean> = mutableMapOf()
+	private val textKeywordsCallbacks: MutableList<Pair<Array<out String>, suspend (Message) -> Boolean>> = mutableListOf()
+	private val stickersCallbacks: MutableList<Pair<Sticker, suspend (Message) -> Boolean>> = mutableListOf()
 
 	private val createTime: Int = (System.currentTimeMillis() / 1000).toInt()
 
 	private val events: MutableMap<String, BaseEvent> = mutableMapOf()
 
-	fun listenCommand(command: String, callback: (args: List<String>, message: Message) -> Boolean) {
+	fun listenCommand(command: String, callback: suspend (args: List<String>, message: Message) -> Boolean) {
 		commandsCallbacks += command to callback
 		commandsCallbacks += "$command@$botUsername" to callback
  	}
 
-	fun listenKeywords(vararg keywords: String, callback: (message: Message) -> Boolean) {
+	fun listenKeywords(vararg keywords: String, callback: suspend (message: Message) -> Boolean) {
 		textKeywordsCallbacks += keywords to callback
 	}
 
-	fun listenSticker(sticker: Sticker, callback: (message: Message) -> Boolean) {
+	fun listenSticker(sticker: Sticker, callback: suspend (message: Message) -> Boolean) {
 		stickersCallbacks += sticker to callback
 	}
 
@@ -106,17 +106,17 @@ abstract class BaseTelegramBot(
 		}
 	}
 
-	override fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean {
+	override suspend fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean {
 		return commandsCallbacks[command]?.invoke(args, message) ?: false
 	}
 
-	override fun onTextReceived(message: Message): Boolean {
+	override suspend fun onTextReceived(message: Message): Boolean {
 		return textKeywordsCallbacks.find { (keywords, callback) ->
 			(keywords.find { message.text.contains(it, ignoreCase = false) } != null) && callback(message)
 		} != null
 	}
 
-	override fun onStickerReceived(message: Message): Boolean {
+	override suspend fun onStickerReceived(message: Message): Boolean {
 		return stickersCallbacks.find { (sticker, _) ->
 			sticker.fileId == message.sticker.fileId
 		}?.second?.invoke(message) ?: false

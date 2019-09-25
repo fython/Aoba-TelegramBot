@@ -55,7 +55,7 @@ class AobaBot(private val botOptions: DefaultBotOptions = DefaultBotOptions())
 
 	override fun isAllowedReceiveOldMessage(): Boolean = false
 
-	override fun onTextReceived(message: Message): Boolean {
+	override suspend fun onTextReceived(message: Message): Boolean {
 		if (message.chat.isGroupChat || message.chat.isSuperGroupChat) {
 			if (message.chatId !in StatisticsDao.joinedGroups) {
 				StatisticsDao.joinedGroups.add(message.chatId)

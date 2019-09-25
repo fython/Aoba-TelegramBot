@@ -153,24 +153,26 @@ class MinesweeperGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		return mapKeyboard!!
 	}
 
-	override fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean = when (command) {
-		"/minesweeper_game_start" -> {
-			onStartCommand(args, message)
-			true
+	override suspend fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean {
+		return when (command) {
+			"/minesweeper_game_start" -> {
+				onStartCommand(args, message)
+				true
+			}
+			"/minesweeper_game_start@${BotKeystore.botKey.username}" -> {
+				onStartCommand(args, message)
+				true
+			}
+			"/minesweeper_game_stop" -> {
+				bot.stopEvent<MinesweeperGame>(chatId)
+				true
+			}
+			"/minesweeper_game_stop@${BotKeystore.botKey.username}" -> {
+				bot.stopEvent<MinesweeperGame>(chatId)
+				true
+			}
+			else -> super.onCommandReceived(command, args, message)
 		}
-		"/minesweeper_game_start@${BotKeystore.botKey.username}" -> {
-			onStartCommand(args, message)
-			true
-		}
-		"/minesweeper_game_stop" -> {
-			bot.stopEvent<MinesweeperGame>(chatId)
-			true
-		}
-		"/minesweeper_game_stop@${BotKeystore.botKey.username}" -> {
-			bot.stopEvent<MinesweeperGame>(chatId)
-			true
-		}
-		else -> super.onCommandReceived(command, args, message)
 	}
 
 	private fun onStartCommand(args: List<String>, message: Message) {
