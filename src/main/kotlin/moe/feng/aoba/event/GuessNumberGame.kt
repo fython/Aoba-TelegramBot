@@ -18,23 +18,30 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 
 	// 召集信息
 	private var collectMessage: Message? = null
-	private val collectMarkupInline = InlineKeyboardMarkup()
-	private val collectKeyButton = InlineKeyboardButton().apply {
-		callbackData = "join_guess_number"
-		collectMarkupInline.keyboard = mutableListOf(mutableListOf(this))
-	}
+	private lateinit var joinButton: InlineKeyboardButton
+	private lateinit var startButton: InlineKeyboardButton
+	private val collectMarkupInline: InlineKeyboardMarkup = InlineKeyboardMarkup()
 
 	private var min = 0
 	private var max = 0
 	private var correct = 0
+	private var initialMax: Int? = null
 
 	override fun onStart() {
+		joinButton = createInlineKeyboardButton(data = "join_guess_number") {
+			onJoinRequest(it)
+		}
+		startButton = createInlineKeyboardButton(text = baseResources["GAME_START_BUTTON"], data = "start_guess_number") {
+			onStartRequest(it)
+		}
+		collectMarkupInline.keyboard = mutableListOf(mutableListOf(joinButton), mutableListOf(startButton))
 		// 发送召集信息
 		bot.sendSticker(chatId.toString(), stickerId = Stickers.konataShoot.fileId)
 		collectMessage = bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
-			collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
+			text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName().toMarkdownSafeText(), makeParticipantsIdList())
+			joinButton.text = baseResources["GAME_JOIN"].format(participants.size)
 			replyMarkup = collectMarkupInline
+			enableMarkdown(true)
 		}
 	}
 
@@ -42,7 +49,8 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		StatisticsDao.guessNumberGame++
 		// 发送开始通知
 		bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_START"].format(participants.size, "@${currentPlayer.userName}")
+			text = resources["GAME_START"].format(participants.size, currentPlayer.toMentionText())
+			enableMarkdown(true)
 		}
 		printCurrentTurn()
 	}
@@ -57,7 +65,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		// 游戏结束判定输家
 		bot.sendSticker(chatId.toString(), stickerId = Stickers.killCat.fileId)
 		bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_OVER"].format(currentPlayer.getDisplayName(), currentPlayer.userName)
+			text = resources["GAME_OVER"].format(currentPlayer.getDisplayName().toMarkdownSafeText(), currentPlayer.toMentionText())
 		}
 		// 禁言套餐
 		/*RestrictChatMember().apply {
@@ -73,8 +81,9 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		super.onStop()
 		try {
 			bot.editMessageText(collectMessage!!) {
-				text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
+				text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName().toMarkdownSafeText(), makeParticipantsIdList())
 				replyMarkup = InlineKeyboardMarkup()
+				enableMarkdown(true)
 			}
 		} catch (e : TelegramApiException) {
 
@@ -82,15 +91,6 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	}
 
 	override suspend fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean = when (command) {
-		// 接收游戏开始命令
-		"/guess_number_game_start" -> {
-			onStartCommand(args, message)
-			true
-		}
-		"/guess_number_game_start@${BotKeystore.botKey.username}" -> {
-			onStartCommand(args, message)
-			true
-		}
 		// 接受游戏停止命令
 		"/guess_number_game_stop" -> {
 			bot.stopEvent<GuessNumberGame>(chatId)
@@ -103,57 +103,73 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		else -> false
 	}
 
-	private fun onStartCommand(args: List<String>, message: Message) {
+	private fun onStartRequest(callbackQuery: CallbackQuery): Boolean {
+		if (callbackQuery.message.messageId != collectMessage?.messageId || callbackQuery.message.chatId != chatId) {
+			return false
+		}
+
 		if (isPlaying()) {
-			bot.replyMessage(message) {
+			bot.answerCallbackQuery(callbackQuery) {
+				showAlert = true
 				text = resources["GAME_ALREADY_START"]
 			}
 		} else {
 			if (participants.size <= 1) {
-				bot.replyMessage(message) {
+				bot.answerCallbackQuery(callbackQuery) {
+					showAlert = true
 					text = resources["GAME_NEED_MORE_PARTICIPANTS"]
 				}
 			} else {
 				min = 0
-				max = (args.getOrNull(0)?.toIntOrNull() ?: 150 + (participants.size / 2) * 100).limitIn(50..100000)
+				max = (initialMax ?: (100 + participants.size * 100)).limitIn(50..100_000)
 				correct = random.nextInt(1 until max)
 				bot.editMessageText(collectMessage!!) {
-					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
+					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName().toMarkdownSafeText(), makeParticipantsIdList())
 					replyMarkup = InlineKeyboardMarkup()
+					enableMarkdown(true)
 				}
 				startGame()
 			}
+		}
+		return true
+	}
+
+	private fun onJoinRequest(callbackQuery: CallbackQuery): Boolean {
+		if (!isPlaying()
+				&& callbackQuery.message.messageId == collectMessage?.messageId
+				&& callbackQuery.message.chatId == chatId) {
+			// 响应新玩家加入
+			val added = findParticipant(callbackQuery.from) != null
+			if (!added) {
+				participants += callbackQuery.from
+			}
+			try {
+				bot.answerCallbackQuery(callbackQuery) {
+					this.showAlert = added
+					this.text = if (!added) resources["GAME_JOIN_SUCCESS"] else resources["GAME_JOIN_FAILED_EXIST"]
+				}
+				// 更新召集消息
+				if (!added) {
+					bot.editMessageText(collectMessage!!) {
+						text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName().toMarkdownSafeText(), makeParticipantsIdList())
+						joinButton.text = baseResources["GAME_JOIN"].format(participants.size)
+						replyMarkup = collectMarkupInline
+						enableMarkdown(true)
+					}
+				}
+			} catch (e: TelegramApiException) {
+				e.printStackTrace()
+			}
+			return true
+		} else {
+			return false
 		}
 	}
 
 	private fun printCurrentTurn() {
 		bot.sendMessage(chatId.toString()) {
-			text = resources["GUESS_TURN_TEXT"].format("@" + currentPlayer.userName, min, max)
-		}
-	}
-
-	override fun onCallbackQuery(callbackQuery: CallbackQuery): Boolean {
-		return if (!isPlaying()
-				&& callbackQuery.message.messageId == collectMessage?.messageId
-				&& callbackQuery.message.chatId == chatId
-				&& callbackQuery.data == "join_guess_number") {
-			// 响应新玩家加入
-			if (findParticipant(callbackQuery.from) == null) {
-				participants += callbackQuery.from
-			}
-			try {
-				// 更新召集消息
-				bot.editMessageText(collectMessage!!) {
-					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
-					collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
-					replyMarkup = collectMarkupInline
-				}
-			} catch (e: TelegramApiException) {
-				// e.printStackTrace()
-			}
-			true
-		} else {
-			false
+			text = resources["GUESS_TURN_TEXT"].format(currentPlayer.toMentionText(), min, max)
+			enableMarkdown(true)
 		}
 	}
 

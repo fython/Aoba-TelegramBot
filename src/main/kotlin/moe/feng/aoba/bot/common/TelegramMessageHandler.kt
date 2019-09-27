@@ -1,6 +1,7 @@
 package moe.feng.aoba.bot.common
 
 import org.apache.tools.ant.types.Commandline
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Message
 
 interface TelegramMessageHandler {
@@ -10,6 +11,8 @@ interface TelegramMessageHandler {
 	suspend fun onTextReceived(message: Message): Boolean
 
 	suspend fun onStickerReceived(message: Message): Boolean
+
+	suspend fun onCallbackQuery(callbackQuery: CallbackQuery): Boolean
 
 	suspend fun handleMessage(msg: Message): Boolean {
 		if (msg.hasText()) {

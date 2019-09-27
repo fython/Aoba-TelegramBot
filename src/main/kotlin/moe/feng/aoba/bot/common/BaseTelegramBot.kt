@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import moe.feng.aoba.event.BaseEvent
 import org.telegram.telegrambots.bots.DefaultBotOptions
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Chat
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -15,11 +16,12 @@ import org.telegram.telegrambots.meta.api.objects.stickers.Sticker
 abstract class BaseTelegramBot(
 		private val botKey: BotKey,
 		private val botOptions: DefaultBotOptions = DefaultBotOptions()
-) : TelegramLongPollingBot(botOptions), TelegramMessageHandler, CoroutineScope by MainScope() {
+) : TelegramLongPollingBot(botOptions), TelegramMessageHandler, CallbackQueryHandler, CoroutineScope by MainScope() {
 
 	private val commandsCallbacks: MutableMap<String, suspend (List<String>, Message) -> Boolean> = mutableMapOf()
 	private val textKeywordsCallbacks: MutableList<Pair<Array<out String>, suspend (Message) -> Boolean>> = mutableListOf()
 	private val stickersCallbacks: MutableList<Pair<Sticker, suspend (Message) -> Boolean>> = mutableListOf()
+	private val callbackQueryCallbacks: MutableList<Pair<String, suspend (CallbackQuery) -> Boolean>> = mutableListOf()
 
 	private val createTime: Int = (System.currentTimeMillis() / 1000).toInt()
 
@@ -36,6 +38,10 @@ abstract class BaseTelegramBot(
 
 	fun listenSticker(sticker: Sticker, callback: suspend (message: Message) -> Boolean) {
 		stickersCallbacks += sticker to callback
+	}
+
+	override fun listenCallbackQuery(callbackData: String, callback: suspend (callbackQuery: CallbackQuery) -> Boolean) {
+		callbackQueryCallbacks += callbackData to callback
 	}
 
 	fun <T : BaseEvent> findEvent(eventClazz: Class<T>, chatId: Long): T? {
@@ -84,7 +90,7 @@ abstract class BaseTelegramBot(
 				if (!isAllowedBeUsed(msg.chat)) return@launch
 				if (isAllowedReceiveOldMessage() || update.message.date < createTime) return@launch
 
-				for ((_, event) in events.filterKeys { key -> key.contains("#${msg.chatId}") }.toList()) {
+				for ((_, event) in events.filterKeys { key -> "#${msg.chatId}" in key }.toList()) {
 					if (event.isAlive) {
 						if (event.handleMessage(msg)) {
 							return@launch
@@ -97,10 +103,15 @@ abstract class BaseTelegramBot(
 					return@launch
 				}
 			} else if (update?.hasCallbackQuery() == true) {
+				var proceed = false
 				for ((_, event) in events) {
 					if (event.onCallbackQuery(update.callbackQuery)) {
+						proceed = true
 						continue
 					}
+				}
+				if (!proceed) {
+					onCallbackQuery(update.callbackQuery)
 				}
 			}
 		}
@@ -111,15 +122,21 @@ abstract class BaseTelegramBot(
 	}
 
 	override suspend fun onTextReceived(message: Message): Boolean {
-		return textKeywordsCallbacks.find { (keywords, callback) ->
+		return textKeywordsCallbacks.any { (keywords, callback) ->
 			(keywords.find { message.text.contains(it, ignoreCase = false) } != null) && callback(message)
-		} != null
+		}
 	}
 
 	override suspend fun onStickerReceived(message: Message): Boolean {
 		return stickersCallbacks.find { (sticker, _) ->
 			sticker.fileId == message.sticker.fileId
 		}?.second?.invoke(message) ?: false
+	}
+
+	override suspend fun onCallbackQuery(callbackQuery: CallbackQuery): Boolean {
+		return callbackQueryCallbacks.find { (data, _) ->
+			callbackQuery.data == data
+		}?.second?.invoke(callbackQuery) ?: false
 	}
 
 	data class BotKey(val token: String, val username: String)

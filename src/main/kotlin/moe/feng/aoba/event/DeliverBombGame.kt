@@ -129,7 +129,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		}
 	}
 
-	override fun onCallbackQuery(callbackQuery: CallbackQuery): Boolean {
+	override suspend fun onCallbackQuery(callbackQuery: CallbackQuery): Boolean {
 		return if (!isPlaying()
 				&& callbackQuery.message.messageId == collectMessage?.messageId
 				&& callbackQuery.message.chatId == chatId

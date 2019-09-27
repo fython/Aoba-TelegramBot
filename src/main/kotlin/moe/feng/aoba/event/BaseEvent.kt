@@ -1,12 +1,21 @@
 package moe.feng.aoba.event
 
 import moe.feng.aoba.bot.common.BaseTelegramBot
+import moe.feng.aoba.bot.common.CallbackQueryHandler
 import moe.feng.aoba.bot.common.TelegramMessageHandler
+import moe.feng.aoba.bot.common.toMentionText
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.User
 
-open class BaseEvent(val chatId: Long, protected val bot: BaseTelegramBot) : TelegramMessageHandler {
+open class BaseEvent(val chatId: Long, protected val bot: BaseTelegramBot)
+	: TelegramMessageHandler, CallbackQueryHandler {
+
+	private val callbackQueryCallbacks: MutableList<Pair<String, suspend (CallbackQuery) -> Boolean>> = mutableListOf()
+
+	override fun listenCallbackQuery(callbackData: String, callback: suspend (callbackQuery: CallbackQuery) -> Boolean) {
+		callbackQueryCallbacks += callbackData to callback
+	}
 
 	val participants: MutableList<User> = mutableListOf()
 
@@ -37,8 +46,10 @@ open class BaseEvent(val chatId: Long, protected val bot: BaseTelegramBot) : Tel
 		return false
 	}
 
-	open fun onCallbackQuery(callbackQuery: CallbackQuery): Boolean {
-		return false
+	override suspend fun onCallbackQuery(callbackQuery: CallbackQuery): Boolean {
+		return callbackQueryCallbacks.find { (data, _) ->
+			callbackQuery.data == data
+		}?.second?.invoke(callbackQuery) ?: false
 	}
 
 	fun findParticipant(userId: Int): User? = participants.find { it.id == userId }
@@ -47,6 +58,6 @@ open class BaseEvent(val chatId: Long, protected val bot: BaseTelegramBot) : Tel
 
 	fun indexOfParticipants(user: User): Int = participants.indexOfFirst { it.id == user.id }
 
-	protected fun makeParticipantsIdList(): String = participants.map { "@${it.userName}" }.reduce { acc, s -> "$acc, $s" }
+	protected fun makeParticipantsIdList(): String = participants.map(User::toMentionText).reduce { acc, s -> "$acc, $s" }
 
 }

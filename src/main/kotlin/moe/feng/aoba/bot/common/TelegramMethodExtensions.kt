@@ -1,11 +1,13 @@
 package moe.feng.aoba.bot.common
 
 import org.telegram.telegrambots.meta.api.methods.ActionType
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators
 import org.telegram.telegrambots.meta.api.methods.send.SendChatAction
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendSticker
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.User
@@ -57,4 +59,15 @@ fun AbsSender.sendChatAction(chatId: String, action: ActionType): Boolean {
 fun AbsSender.hasAdminAccess(user: User, chat: Long): Boolean {
 	return this.execute(GetChatAdministrators().apply { chatId = chat.toString() })
 			.find { it.user.id == user.id } != null
+}
+
+fun AbsSender.answerCallbackQuery(id: String, block: AnswerCallbackQuery.() -> Unit): Boolean {
+	return this.execute(AnswerCallbackQuery().apply {
+		this.callbackQueryId = id
+		block()
+	})
+}
+
+fun AbsSender.answerCallbackQuery(callbackQuery: CallbackQuery, block: AnswerCallbackQuery.() -> Unit): Boolean {
+	return answerCallbackQuery(callbackQuery.id, block)
 }
