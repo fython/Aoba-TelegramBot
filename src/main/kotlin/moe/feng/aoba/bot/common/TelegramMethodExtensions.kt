@@ -14,6 +14,10 @@ import org.telegram.telegrambots.meta.api.objects.User
 import org.telegram.telegrambots.meta.bots.AbsSender
 import java.io.Serializable
 
+fun AbsSender.sendMessage(chatId: Long, block: SendMessage.() -> Unit): Message? {
+	return this.sendMessage(chatId.toString(), block)
+}
+
 fun AbsSender.sendMessage(chatId: String, block: SendMessage.() -> Unit): Message? {
 	return this.execute(SendMessage().apply { this.chatId = chatId }.apply(block))
 }
@@ -36,6 +40,11 @@ fun AbsSender.editMessageText(originMessage: Message, block: EditMessageText.() 
 		messageId = originMessage.messageId
 		text = originMessage.text
 	}.apply(block))
+}
+
+fun AbsSender.sendSticker(chatId: Long, stickerId: String? = null, stickerFile: InputFile? = null,
+						  block: SendSticker.() -> Unit = {}): Message? {
+	return this.sendSticker(chatId.toString(), stickerId, stickerFile, block)
 }
 
 fun AbsSender.sendSticker(chatId: String, stickerId: String? = null, stickerFile: InputFile? = null,

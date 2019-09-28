@@ -4,13 +4,6 @@ import moe.feng.aoba.dao.GroupRulesDao
 import org.telegram.telegrambots.meta.api.objects.Chat
 import org.telegram.telegrambots.meta.api.objects.User
 
-fun String.toMarkdownSafeText(): String {
-    return this.replace("_", "\\_")
-            .replace("*", "\\*")
-            .replace("[", "\\[")
-            .replace("`", "\\`")
-}
-
 fun User.getDisplayName(): String = (firstName + " " + (lastName ?: "")).trim()
 
 fun User.toMentionText(): String {

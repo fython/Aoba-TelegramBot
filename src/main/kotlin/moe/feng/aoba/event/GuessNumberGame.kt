@@ -8,6 +8,7 @@ import moe.feng.aoba.support.get
 import moe.feng.aoba.support.limitIn
 import moe.feng.aoba.support.nextInt
 import moe.feng.aoba.support.resourceBundle
+import moe.feng.common.kt.StringUtil
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
@@ -27,6 +28,13 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	private var correct = 0
 	private var initialMax: Int? = null
 
+	private val messageTextGamePrepare: String get() = resources["GAME_PREPARE"].format(
+			StringUtil.toMarkdownSafe(currentPlayer.getDisplayName()),
+			makeParticipantsIdList(),
+			MIN_RANGE,
+			MAX_RANGE
+	)
+
 	override fun onStart() {
 		joinButton = createInlineKeyboardButton(data = "join_guess_number") {
 			onJoinRequest(it)
@@ -36,9 +44,9 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		}
 		collectMarkupInline.keyboard = mutableListOf(mutableListOf(joinButton), mutableListOf(startButton))
 		// 发送召集信息
-		bot.sendSticker(chatId.toString(), stickerId = Stickers.konataShoot.fileId)
-		collectMessage = bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName().toMarkdownSafeText(), makeParticipantsIdList())
+		bot.sendSticker(chatId, stickerId = Stickers.konataShoot.fileId)
+		collectMessage = bot.sendMessage(chatId) {
+			text = messageTextGamePrepare
 			joinButton.text = baseResources["GAME_JOIN"].format(participants.size)
 			replyMarkup = collectMarkupInline
 			enableMarkdown(true)
@@ -48,7 +56,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	override fun onGameStart() {
 		StatisticsDao.guessNumberGame++
 		// 发送开始通知
-		bot.sendMessage(chatId.toString()) {
+		bot.sendMessage(chatId) {
 			text = resources["GAME_START"].format(participants.size, currentPlayer.toMentionText())
 			enableMarkdown(true)
 		}
@@ -63,9 +71,10 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 
 	override fun onGameOver() {
 		// 游戏结束判定输家
-		bot.sendSticker(chatId.toString(), stickerId = Stickers.killCat.fileId)
-		bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_OVER"].format(currentPlayer.getDisplayName().toMarkdownSafeText(), currentPlayer.toMentionText())
+		bot.sendSticker(chatId, stickerId = Stickers.killCat.fileId)
+		bot.sendMessage(chatId) {
+			text = resources["GAME_OVER"].format(
+					StringUtil.toMarkdownSafe(currentPlayer.getDisplayName()), currentPlayer.toMentionText())
 		}
 		// 禁言套餐
 		/*RestrictChatMember().apply {
@@ -81,7 +90,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		super.onStop()
 		try {
 			bot.editMessageText(collectMessage!!) {
-				text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName().toMarkdownSafeText(), makeParticipantsIdList())
+				text = messageTextGamePrepare
 				replyMarkup = InlineKeyboardMarkup()
 				enableMarkdown(true)
 			}
@@ -90,17 +99,44 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		}
 	}
 
-	override suspend fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean = when (command) {
-		// 接受游戏停止命令
-		"/guess_number_game_stop" -> {
-			bot.stopEvent<GuessNumberGame>(chatId)
-			true
+	override suspend fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean {
+		return when (command) {
+			// 设定最大范围命令
+			"/guess_number_game_set" -> {
+				onSetMaxRequest(args, message)
+				true
+			}
+			"/guess_number_game_set@${BotKeystore.botKey.username}" -> {
+				onSetMaxRequest(args, message)
+				true
+			}
+			// 接受游戏停止命令
+			"/guess_number_game_stop" -> {
+				bot.stopEvent<GuessNumberGame>(chatId)
+				true
+			}
+			"/guess_number_game_stop@${BotKeystore.botKey.username}" -> {
+				bot.stopEvent<GuessNumberGame>(chatId)
+				true
+			}
+			else -> false
 		}
-		"/guess_number_game_stop@${BotKeystore.botKey.username}" -> {
-			bot.stopEvent<GuessNumberGame>(chatId)
-			true
+	}
+
+	private fun onSetMaxRequest(args: List<String>, message: Message) {
+		if (args.size == 1) {
+			val newMax = args.firstOrNull()?.toIntOrNull()
+			if (newMax != null && newMax >= MIN_RANGE && newMax <= MAX_RANGE) {
+				initialMax = newMax
+				bot.replyMessage(message) {
+					text = resources["GAME_SET_MAX_SUCCESS"].format(newMax)
+				}
+				return
+			}
 		}
-		else -> false
+		bot.replyMessage(message) {
+			text = resources["GAME_SET_MAX_FAILED"].format(MIN_RANGE, MAX_RANGE)
+		}
 	}
 
 	private fun onStartRequest(callbackQuery: CallbackQuery): Boolean {
@@ -121,10 +157,10 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				}
 			} else {
 				min = 0
-				max = (initialMax ?: (100 + participants.size * 100)).limitIn(50..100_000)
+				max = (initialMax ?: (100 + participants.size * 100)).limitIn(MIN_RANGE..MAX_RANGE)
 				correct = random.nextInt(1 until max)
 				bot.editMessageText(collectMessage!!) {
-					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName().toMarkdownSafeText(), makeParticipantsIdList())
+					text = messageTextGamePrepare
 					replyMarkup = InlineKeyboardMarkup()
 					enableMarkdown(true)
 				}
@@ -151,7 +187,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				// 更新召集消息
 				if (!added) {
 					bot.editMessageText(collectMessage!!) {
-						text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName().toMarkdownSafeText(), makeParticipantsIdList())
+						text = messageTextGamePrepare
 						joinButton.text = baseResources["GAME_JOIN"].format(participants.size)
 						replyMarkup = collectMarkupInline
 						enableMarkdown(true)
@@ -210,6 +246,9 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	companion object {
 
 		private val resources by resourceBundle("guess_number_game")
+
+		private const val MIN_RANGE = 50
+		private const val MAX_RANGE = 100000
 
 	}
 
