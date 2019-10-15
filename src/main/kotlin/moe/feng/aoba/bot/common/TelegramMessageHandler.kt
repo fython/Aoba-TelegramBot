@@ -3,6 +3,7 @@ package moe.feng.aoba.bot.common
 import org.apache.tools.ant.types.Commandline
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery
 import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.User
 
 interface TelegramMessageHandler {
 
@@ -13,6 +14,10 @@ interface TelegramMessageHandler {
 	suspend fun onStickerReceived(message: Message): Boolean
 
 	suspend fun onCallbackQuery(callbackQuery: CallbackQuery): Boolean
+
+	suspend fun onNewChatMembers(message: Message, members: List<User>): Boolean
+
+	suspend fun onLeftChatMembers(message: Message, member: User): Boolean
 
 	suspend fun handleMessage(msg: Message): Boolean {
 		if (msg.hasText()) {
@@ -30,6 +35,16 @@ interface TelegramMessageHandler {
 		}
 		if (msg.sticker != null) {
 			if (onStickerReceived(msg)) {
+				return true
+			}
+		}
+		if (msg.newChatMembers != null) {
+			if (onNewChatMembers(msg, msg.newChatMembers)) {
+				return true
+			}
+		}
+		if (msg.leftChatMember != null) {
+			if (onLeftChatMembers(msg, msg.leftChatMember)) {
 				return true
 			}
 		}

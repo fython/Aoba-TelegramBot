@@ -46,6 +46,14 @@ open class BaseEvent(val chatId: Long, protected val bot: BaseTelegramBot)
 		return false
 	}
 
+	override suspend fun onNewChatMembers(message: Message, members: List<User>): Boolean {
+		return false
+	}
+
+	override suspend fun onLeftChatMembers(message: Message, member: User): Boolean {
+		return false
+	}
+
 	override suspend fun onCallbackQuery(callbackQuery: CallbackQuery): Boolean {
 		return callbackQueryCallbacks.find { (data, _) ->
 			callbackQuery.data == data

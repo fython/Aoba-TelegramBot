@@ -7,10 +7,8 @@ import kotlinx.coroutines.launch
 import moe.feng.aoba.event.BaseEvent
 import org.telegram.telegrambots.bots.DefaultBotOptions
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery
-import org.telegram.telegrambots.meta.api.objects.Chat
-import org.telegram.telegrambots.meta.api.objects.Message
-import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators
+import org.telegram.telegrambots.meta.api.objects.*
 import org.telegram.telegrambots.meta.api.objects.stickers.Sticker
 
 abstract class BaseTelegramBot(
@@ -82,6 +80,14 @@ abstract class BaseTelegramBot(
 
 	open fun isAllowedReceiveOldMessage(): Boolean = true
 
+	fun isAdmin(chat: Chat): Boolean {
+		return hasAdminAccess(me, chat.id)
+	}
+
+	fun isAdmin(chatId: Long): Boolean {
+		return hasAdminAccess(me, chatId)
+	}
+
 	final override fun onUpdateReceived(update: Update?) {
 		launch(Dispatchers.IO) {
 			if (update?.hasMessage() == true) {
@@ -137,6 +143,14 @@ abstract class BaseTelegramBot(
 		return callbackQueryCallbacks.find { (data, _) ->
 			callbackQuery.data == data
 		}?.second?.invoke(callbackQuery) ?: false
+	}
+
+	override suspend fun onNewChatMembers(message: Message, members: List<User>): Boolean {
+		return false
+	}
+
+	override suspend fun onLeftChatMembers(message: Message, member: User): Boolean {
+		return false
 	}
 
 	data class BotKey(val token: String, val username: String)
