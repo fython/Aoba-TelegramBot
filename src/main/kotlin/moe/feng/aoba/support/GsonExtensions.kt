@@ -1,6 +1,7 @@
 package moe.feng.aoba.support
 
 import com.google.gson.GsonBuilder
+import com.google.gson.LongSerializationPolicy
 
 val GSON = GsonBuilder().create()
 

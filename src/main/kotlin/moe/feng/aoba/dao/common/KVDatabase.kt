@@ -1,15 +1,21 @@
 package moe.feng.aoba.dao.common
 
+import com.google.gson.JsonObject
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoClients
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Updates.set
+import moe.feng.aoba.dao.GroupRulesDao
+import moe.feng.aoba.dao.StatisticsDao
+import moe.feng.aoba.model.GroupRules
 import moe.feng.aoba.support.parseToList
 import moe.feng.aoba.support.toJson
 import moe.feng.aoba.support.parseToObject
 import moe.feng.common.kt.StringUtil
 import org.bson.Document
+import java.io.File
+import java.util.logging.Logger
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -425,6 +431,53 @@ open class KVDatabase(val databaseName: String, val tableName: String) {
         @JvmStatic
         fun init() {
             mongoClient = MongoClients.create()
+            importOldDataFromJson()
+        }
+
+        @JvmStatic
+        fun importOldDataFromJson() {
+            val logger = Logger.getLogger("KVDatabase")
+            val groupRulesFile = File("group_rules.json")
+            val statisticsFile = File("statistics.json")
+            if (groupRulesFile.isFile) {
+                logger.info("Importing old data from json: ${groupRulesFile.absolutePath}")
+                try {
+                    val json = groupRulesFile.readText()
+                    val table = json.parseToObject<JsonObject>()["table"]!!.asJsonObject
+                    table["data"]?.toJson()
+                            ?.parseToList<GroupRules>()
+                            ?.toMutableList()
+                            ?.let { GroupRulesDao.data = it }
+                    logger.info("Finished importing from json: ${groupRulesFile.absolutePath}")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                // groupRulesFile.renameTo(File("group_rules.imported.json"))
+            }
+            if (statisticsFile.isFile) {
+                logger.info("Importing old data from json: ${statisticsFile.absolutePath}")
+                try {
+                    val json = statisticsFile.readText()
+                    val table = json.parseToObject<JsonObject>()["table"]!!.asJsonObject
+                    with(StatisticsDao) {
+                        table["bombGame"]?.asInt?.let { bombGame = it }
+                        table["chooseCommand"]?.asInt?.let { chooseCommand = it }
+                        table["guessNumberGame"]?.asInt?.let { guessNumberGame = it }
+                        table["joinedGroups"]?.toJson()
+                                ?.parseToList<Long>()
+                                ?.toMutableList()
+                                ?.let { joinedGroups = it }
+                        table["lastLaunchTime"]?.asLong?.let { lastLaunchTime = it }
+                        table["minesweeperGame"]?.asInt?.let { minesweeperGame = it }
+                        table["replaceCommand"]?.asInt?.let { replaceCommand = it }
+                        table["spaceCommand"]?.asInt?.let { spaceCommand = it }
+                    }
+                    logger.info("Finished importing from json: ${statisticsFile.absolutePath}")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                // statisticsFile.renameTo(File("statistics.imported.json"))
+            }
         }
 
         private fun getDatabase(name: String): MongoDatabase {
