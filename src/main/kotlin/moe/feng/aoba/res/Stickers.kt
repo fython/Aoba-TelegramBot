@@ -2,7 +2,7 @@ package moe.feng.aoba.res
 
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.resourceBundle
-import moe.feng.aoba.support.toObject
+import moe.feng.aoba.support.parseToObject
 import org.telegram.telegrambots.meta.api.objects.stickers.Sticker
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -26,7 +26,7 @@ object Stickers {
 
 		override fun getValue(thisRef: Stickers, property: KProperty<*>): Sticker {
 			if (value == null) {
-				value = thisRef.stickersRes[name ?: property.name].toObject()
+				value = thisRef.stickersRes[name ?: property.name].parseToObject()
 			}
 			return value ?: getValue(thisRef, property)
 		}

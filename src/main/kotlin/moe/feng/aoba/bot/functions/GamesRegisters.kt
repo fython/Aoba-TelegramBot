@@ -36,7 +36,6 @@ fun AobaBot.registerGameOptions() {
 							val groupRules = GroupRulesDao.data.find { it.id == message.chatId }
 									?: GroupRules(message.chatId).apply { GroupRulesDao.data.add(this) }
 							groupRules.isAllowGame = value
-							GroupRulesDao.scheduleSave()
 							replyMessage(message) {
 								text = AobaBot.resources["ALLOW_GAME_MODIFIED_STATUS"].format(
 										AobaBot.resources[if (value) "ALLOW" else "DISALLOW"]

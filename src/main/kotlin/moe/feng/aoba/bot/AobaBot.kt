@@ -59,7 +59,6 @@ class AobaBot(private val botOptions: DefaultBotOptions = DefaultBotOptions())
 		if (message.chat.isGroupChat || message.chat.isSuperGroupChat) {
 			if (message.chatId !in StatisticsDao.joinedGroups) {
 				StatisticsDao.joinedGroups.add(message.chatId)
-				StatisticsDao.scheduleSave()
 			}
 		}
 		return super.onTextReceived(message)

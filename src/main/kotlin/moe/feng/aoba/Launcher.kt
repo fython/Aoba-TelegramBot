@@ -3,6 +3,7 @@ package moe.feng.aoba
 import moe.feng.aoba.api.RemoteYeelightApi
 import moe.feng.aoba.bot.AobaBot
 import moe.feng.aoba.dao.StatisticsDao
+import moe.feng.aoba.dao.common.KVDatabase
 import moe.feng.aoba.res.BotOptions
 import org.telegram.telegrambots.ApiContextInitializer
 import org.telegram.telegrambots.bots.DefaultBotOptions
@@ -25,6 +26,7 @@ object Launcher {
 		ApiContextInitializer.init()
 		val botsApi = TelegramBotsApi()
 
+		KVDatabase.init()
 		RemoteYeelightApi.startListening()
 		StatisticsDao.lastLaunchTime = System.currentTimeMillis()
 		botsApi.registerBot(aobaBot)
