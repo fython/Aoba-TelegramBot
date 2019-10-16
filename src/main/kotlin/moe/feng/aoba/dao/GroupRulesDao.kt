@@ -5,6 +5,6 @@ import moe.feng.aoba.model.GroupRules
 
 object GroupRulesDao : KVDatabase("group_rules", "basic") {
 
-	var data by mutableListValue<GroupRules>()
+	var data by mutableListValue(Array<GroupRules>::class.java)
 
 }

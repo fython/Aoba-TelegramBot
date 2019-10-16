@@ -14,6 +14,6 @@ object StatisticsDao : KVDatabase("statistics", "default") {
     var guessNumberGame by intValue()
     var minesweeperGame by intValue()
 
-    var joinedGroups by mutableListValue<Long>()
+    var joinedGroups by mutableListValue(Array<Long>::class.java)
 
 }

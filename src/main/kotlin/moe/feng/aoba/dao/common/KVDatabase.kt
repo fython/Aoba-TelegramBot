@@ -117,26 +117,12 @@ open class KVDatabase(val databaseName: String, val tableName: String) {
         return ListProperty(key, defModelJson, elementArrayClass)
     }
 
-    internal inline fun <reified E : Any> listValue(
-            key: String? = null,
-            defModelJson: String = "[]"
-    ): ReadWriteProperty<KVDatabase, List<E>> {
-        return listValue(Array<E>::class.java, key, defModelJson)
-    }
-
     internal fun <E : Any> mutableListValue(
             elementArrayClass: Class<Array<E>>,
             key: String? = null,
             defModelJson: String = "[]"
     ): ReadWriteProperty<KVDatabase, MutableList<E>> {
         return MutableListProperty(key, defModelJson, elementArrayClass)
-    }
-
-    internal inline fun <reified E : Any> mutableListValue(
-            key: String? = null,
-            defModelJson: String = "[]"
-    ): ReadWriteProperty<KVDatabase, MutableList<E>> {
-        return mutableListValue(Array<E>::class.java, key, defModelJson)
     }
 
     internal fun <E : Any> modelValue(
