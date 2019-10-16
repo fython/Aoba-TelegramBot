@@ -9,5 +9,6 @@ keystore.properties
 local_options.properties
 group_rules.json
 statistics.json
+*.imported.json
 .project
 .classpath

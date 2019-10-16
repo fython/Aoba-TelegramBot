@@ -1,9 +1,10 @@
-package moe.feng.aoba.support
+package moe.feng.aoba.support.json
 
 import com.google.gson.GsonBuilder
-import com.google.gson.LongSerializationPolicy
 
-val GSON = GsonBuilder().create()
+val GSON = GsonBuilder()
+        .registerTypeAdapter(Long::class.java, LongJsonSerializer)
+        .create()
 
 fun <T : Any> T.toJson(): String = GSON.toJson(this)
 

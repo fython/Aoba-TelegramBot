@@ -2,7 +2,7 @@ package moe.feng.aoba.res
 
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.resourceBundle
-import moe.feng.aoba.support.parseToObject
+import moe.feng.aoba.support.json.parseToObject
 import org.telegram.telegrambots.meta.api.objects.stickers.Sticker
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty

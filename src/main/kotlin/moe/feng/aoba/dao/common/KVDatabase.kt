@@ -9,9 +9,9 @@ import com.mongodb.client.model.Updates.set
 import moe.feng.aoba.dao.GroupRulesDao
 import moe.feng.aoba.dao.StatisticsDao
 import moe.feng.aoba.model.GroupRules
-import moe.feng.aoba.support.parseToList
-import moe.feng.aoba.support.toJson
-import moe.feng.aoba.support.parseToObject
+import moe.feng.aoba.support.json.parseToList
+import moe.feng.aoba.support.json.toJson
+import moe.feng.aoba.support.json.parseToObject
 import moe.feng.common.kt.StringUtil
 import org.bson.Document
 import java.io.File
@@ -452,7 +452,7 @@ open class KVDatabase(val databaseName: String, val tableName: String) {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-                // groupRulesFile.renameTo(File("group_rules.imported.json"))
+                groupRulesFile.renameTo(File("group_rules.imported.json"))
             }
             if (statisticsFile.isFile) {
                 logger.info("Importing old data from json: ${statisticsFile.absolutePath}")
@@ -476,7 +476,7 @@ open class KVDatabase(val databaseName: String, val tableName: String) {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-                // statisticsFile.renameTo(File("statistics.imported.json"))
+                statisticsFile.renameTo(File("statistics.imported.json"))
             }
         }
 
