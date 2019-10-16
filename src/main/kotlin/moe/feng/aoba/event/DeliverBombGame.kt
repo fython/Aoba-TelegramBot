@@ -20,22 +20,33 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 	// 召集信息
 	private var collectMessage: Message? = null
 	private val collectMarkupInline = InlineKeyboardMarkup()
-	private val collectKeyButton = InlineKeyboardButton().apply {
-		callbackData = "join"
-		collectMarkupInline.keyboard = mutableListOf(mutableListOf(this))
-	}
+	private lateinit var startButton: InlineKeyboardButton
+	private lateinit var joinButton: InlineKeyboardButton
 
 	// 时间计数器
 	private var currentTime = 0
 	private val timer = Timer()
 
+	private val messageTextGamePrepare: String get() = resources["GAME_PREPARE"].format(
+			currentPlayer.getDisplayName(),
+			makeParticipantsIdList()
+	)
+
 	override fun onStart() {
+		joinButton = createInlineKeyboardButton(data = "join_deliver_bomb") {
+			onJoinRequest(it)
+		}
+		startButton = createInlineKeyboardButton(text = baseResources["GAME_START_BUTTON"], data = "start_deliver_bomb") {
+			onStartRequest(it)
+		}
+		collectMarkupInline.keyboard = mutableListOf(mutableListOf(joinButton), mutableListOf(startButton))
 		// 发送召集信息
 		bot.sendSticker(chatId.toString(), stickerId = Stickers.catWithClock.fileId)
 		collectMessage = bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
-			collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
+			text = messageTextGamePrepare
+			joinButton.text = baseResources["GAME_JOIN"].format(participants.size)
 			replyMarkup = collectMarkupInline
+			enableMarkdown(true)
 		}
 	}
 
@@ -43,7 +54,8 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		StatisticsDao.bombGame++
 		// 发送开始通知
 		bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_START"].format(participants.size, "@${currentPlayer.userName}", MAX_GAME_TIME)
+			text = resources["GAME_START"].format(participants.size, currentPlayer.toMentionText(), MAX_GAME_TIME)
+			enableMarkdown(true)
 		}
 		// 设定定时器
 		timer.scheduleAtFixedRate(TickTock(), 0, 1000)
@@ -54,7 +66,8 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		// 游戏结束判定输家
 		bot.sendSticker(chatId.toString(), stickerId = Stickers.killCat.fileId)
 		bot.sendMessage(chatId.toString()) {
-			text = resources["GAME_OVER"].format(currentPlayer.getDisplayName(), currentPlayer.userName)
+			text = resources["GAME_OVER"].format(currentPlayer.getDisplayName(), currentPlayer.toMentionText())
+			enableMarkdown(true)
 		}
 		// 禁言套餐
 		/*RestrictChatMember().apply {
@@ -77,8 +90,9 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		super.onStop()
 		try {
 			bot.editMessageText(collectMessage!!) {
-				text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
+				text = messageTextGamePrepare
 				replyMarkup = InlineKeyboardMarkup()
+				enableMarkdown(true)
 			}
 		} catch (e : TelegramApiException) {
 
@@ -87,15 +101,6 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 
 	override suspend fun onCommandReceived(command: String, args: List<String>, message: Message): Boolean {
 		return when (command) {
-			// 接收游戏开始命令
-			"/bomb_game_start" -> {
-				onStartCommand(message)
-				true
-			}
-			"/bomb_game_start@${BotKeystore.botKey.username}" -> {
-				onStartCommand(message)
-				true
-			}
 			// 接受游戏停止命令
 			"/bomb_game_stop" -> {
 				bot.stopEvent<DeliverBombGame>(chatId)
@@ -109,48 +114,63 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 		}
 	}
 
-	private fun onStartCommand(message: Message) {
+	private fun onStartRequest(callbackQuery: CallbackQuery): Boolean {
+		if (callbackQuery.message.messageId != collectMessage?.messageId || callbackQuery.message.chatId != chatId) {
+			return false
+		}
+
 		if (isPlaying()) {
-			bot.replyMessage(message) {
+			bot.answerCallbackQuery(callbackQuery) {
+				showAlert = true
 				text = resources["GAME_ALREADY_START"]
 			}
 		} else {
 			if (participants.size <= 1) {
-				bot.replyMessage(message) {
+				bot.answerCallbackQuery(callbackQuery) {
+					showAlert = true
 					text = resources["GAME_NEED_MORE_PARTICIPANTS"]
 				}
 			} else {
 				bot.editMessageText(collectMessage!!) {
-					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
+					text = messageTextGamePrepare
 					replyMarkup = InlineKeyboardMarkup()
+					enableMarkdown(true)
 				}
 				startGame()
 			}
 		}
+		return true
 	}
 
-	override suspend fun onCallbackQuery(callbackQuery: CallbackQuery): Boolean {
-		return if (!isPlaying()
+	private fun onJoinRequest(callbackQuery: CallbackQuery): Boolean {
+		if (!isPlaying()
 				&& callbackQuery.message.messageId == collectMessage?.messageId
-				&& callbackQuery.message.chatId == chatId
-				&& callbackQuery.data == "join") {
+				&& callbackQuery.message.chatId == chatId) {
 			// 响应新玩家加入
-			if (findParticipant(callbackQuery.from) == null) {
+			val added = findParticipant(callbackQuery.from) != null
+			if (!added) {
 				participants += callbackQuery.from
 			}
 			try {
+				bot.answerCallbackQuery(callbackQuery) {
+					this.showAlert = added
+					this.text = if (!added) resources["GAME_JOIN_SUCCESS"] else resources["GAME_JOIN_FAILED_EXIST"]
+				}
 				// 更新召集消息
-				bot.editMessageText(collectMessage!!) {
-					text = resources["GAME_PREPARE"].format(currentPlayer.getDisplayName(), makeParticipantsIdList())
-					collectKeyButton.text = baseResources["GAME_JOIN"].format(participants.size)
-					replyMarkup = collectMarkupInline
+				if (!added) {
+					bot.editMessageText(collectMessage!!) {
+						text = messageTextGamePrepare
+						joinButton.text = baseResources["GAME_JOIN"].format(participants.size)
+						replyMarkup = collectMarkupInline
+						enableMarkdown(true)
+					}
 				}
 			} catch (e: TelegramApiException) {
 				e.printStackTrace()
 			}
-			true
+			return true
 		} else {
-			false
+			return false
 		}
 	}
 
@@ -184,7 +204,8 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				if (random.nextInt(10) < 2) {
 					// 运气不佳
 					bot.sendMessage(chatId.toString()) {
-						text = resources["BOMB_DELIVERED_FAILED"].format("@" + currentPlayer.userName)
+						text = resources["BOMB_DELIVERED_FAILED"].format(currentPlayer.toMentionText())
+						enableMarkdown(true)
 					}
 					bot.sendSticker(chatId.toString(), stickerId = Stickers.catWithClock.fileId) {
 						replyToMessageId = message.messageId
@@ -195,8 +216,9 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 						text = resources["BOMB_DELIVERED_TO"].format(
 								currentPlayer.getDisplayName(),
 								nextOwner.getDisplayName(),
-								"@${nextOwner.userName}"
+								nextOwner.toMentionText()
 						)
+						enableMarkdown(true)
 					}
 					currentPlayerIndex = indexOfParticipants(nextOwner)
 				}
@@ -211,7 +233,6 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 
 		override fun run() {
 			if (!isPlaying()) return
-			println("Current time: $currentTime")
 			currentTime++
 			if (currentTime % 10 == 0) {
 				bot.sendMessage(chatId.toString()) {
