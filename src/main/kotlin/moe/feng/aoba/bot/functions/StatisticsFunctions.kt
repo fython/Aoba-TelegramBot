@@ -3,7 +3,7 @@ package moe.feng.aoba.bot.functions
 import moe.feng.aoba.bot.AobaBot
 import moe.feng.aoba.bot.common.replyMessage
 import moe.feng.aoba.dao.StatisticsDao
-import moe.feng.aoba.res.BotKeystore
+import moe.feng.aoba.support.LocalProperties.BotInfo
 import moe.feng.aoba.support.get
 import java.text.SimpleDateFormat
 import java.util.*
@@ -12,7 +12,7 @@ fun AobaBot.registerStatisticsFunctions() {
 	listenCommand("/bot_statistics") { _, message ->
 		replyMessage(message) {
 			text = AobaBot.resources["STATISTICS_FORMAT"].format(
-					/* Bot name = */ "@" + BotKeystore.botKey.username,
+					/* Bot name = */ "@${BotInfo.username}",
 					StatisticsDao.replaceCommand,
 					StatisticsDao.spaceCommand,
 					StatisticsDao.chooseCommand,

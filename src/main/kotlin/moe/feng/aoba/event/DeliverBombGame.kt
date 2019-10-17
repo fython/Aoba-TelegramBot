@@ -2,7 +2,7 @@ package moe.feng.aoba.event
 
 import moe.feng.aoba.bot.common.*
 import moe.feng.aoba.dao.StatisticsDao
-import moe.feng.aoba.res.BotKeystore
+import moe.feng.aoba.support.LocalProperties.BotInfo
 import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.nextInt
@@ -106,7 +106,7 @@ class DeliverBombGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				bot.stopEvent<DeliverBombGame>(chatId)
 				true
 			}
-			"/bomb_game_stop@${BotKeystore.botKey.username}" -> {
+			"/bomb_game_stop@${BotInfo.username}" -> {
 				bot.stopEvent<DeliverBombGame>(chatId)
 				true
 			}

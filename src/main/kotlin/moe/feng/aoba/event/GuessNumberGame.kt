@@ -2,7 +2,7 @@ package moe.feng.aoba.event
 
 import moe.feng.aoba.bot.common.*
 import moe.feng.aoba.dao.StatisticsDao
-import moe.feng.aoba.res.BotKeystore
+import moe.feng.aoba.support.LocalProperties.BotInfo
 import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.limitIn
@@ -106,7 +106,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				onSetMaxRequest(args, message)
 				true
 			}
-			"/guess_number_game_set@${BotKeystore.botKey.username}" -> {
+			"/guess_number_game_set@${BotInfo.username}" -> {
 				onSetMaxRequest(args, message)
 				true
 			}
@@ -115,7 +115,7 @@ class GuessNumberGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				bot.stopEvent<GuessNumberGame>(chatId)
 				true
 			}
-			"/guess_number_game_stop@${BotKeystore.botKey.username}" -> {
+			"/guess_number_game_stop@${BotInfo.username}" -> {
 				bot.stopEvent<GuessNumberGame>(chatId)
 				true
 			}

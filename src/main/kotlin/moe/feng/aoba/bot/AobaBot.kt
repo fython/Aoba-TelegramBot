@@ -6,7 +6,7 @@ import moe.feng.aoba.dao.StatisticsDao
 import moe.feng.aoba.event.DeliverBombGame
 import moe.feng.aoba.event.GuessNumberGame
 import moe.feng.aoba.event.MinesweeperGame
-import moe.feng.aoba.res.BotKeystore
+import moe.feng.aoba.support.LocalProperties
 import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.resourceBundle
@@ -15,7 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.Chat
 import org.telegram.telegrambots.meta.api.objects.Message
 
 class AobaBot(private val botOptions: DefaultBotOptions = DefaultBotOptions())
-	 : BaseTelegramBot(BotKeystore.botKey, botOptions) {
+	 : BaseTelegramBot(LocalProperties.BotInfo.getBotKey(), botOptions) {
 
 	init {
 		registerHelpFunctions()

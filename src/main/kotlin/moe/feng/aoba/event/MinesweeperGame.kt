@@ -3,7 +3,7 @@ package moe.feng.aoba.event
 import moe.feng.aoba.bot.common.*
 import moe.feng.aoba.dao.StatisticsDao
 import moe.feng.aoba.model.MineMap
-import moe.feng.aoba.res.BotKeystore
+import moe.feng.aoba.support.LocalProperties.BotInfo
 import moe.feng.aoba.res.Stickers
 import moe.feng.aoba.support.get
 import moe.feng.aoba.support.resourceBundle
@@ -159,7 +159,7 @@ class MinesweeperGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				onStartCommand(args, message)
 				true
 			}
-			"/minesweeper_game_start@${BotKeystore.botKey.username}" -> {
+			"/minesweeper_game_start@${BotInfo.username}" -> {
 				onStartCommand(args, message)
 				true
 			}
@@ -167,7 +167,7 @@ class MinesweeperGame(chatId: Long, bot: BaseTelegramBot) : BaseGame(chatId, bot
 				bot.stopEvent<MinesweeperGame>(chatId)
 				true
 			}
-			"/minesweeper_game_stop@${BotKeystore.botKey.username}" -> {
+			"/minesweeper_game_stop@${BotInfo.username}" -> {
 				bot.stopEvent<MinesweeperGame>(chatId)
 				true
 			}

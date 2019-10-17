@@ -12,3 +12,4 @@ statistics.json
 *.imported.json
 .project
 .classpath
+aoba-bot.cfg

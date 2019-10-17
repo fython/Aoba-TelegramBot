@@ -8,6 +8,14 @@ import kotlin.reflect.KProperty
 operator fun ResourceBundle.get(key: String): String =
 		this.getString(key).toByteArray(StandardCharsets.ISO_8859_1).toString(StandardCharsets.UTF_8)
 
+fun ResourceBundle.getOrNull(key: String): String? {
+	if (this.containsKey(key)) {
+		return this[key]
+	} else {
+		return null
+	}
+}
+
 fun <T> resourceBundle(name: String) = ResourcesExtensionsProperty<T>(name)
 
 class ResourcesExtensionsProperty<in T>(private val name: String) : ReadOnlyProperty<T, ResourceBundle> {
