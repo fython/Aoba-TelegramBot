@@ -14,4 +14,4 @@ fun User.toMentionText(): String {
     }
 }
 
-fun Chat.isAllowGame(): Boolean = GroupRulesDao.data.find { it.id == this.id }?.isAllowGame ?: false
+fun Chat.isAllowGame(): Boolean = GroupRulesDao.isAllowGame(this.id)

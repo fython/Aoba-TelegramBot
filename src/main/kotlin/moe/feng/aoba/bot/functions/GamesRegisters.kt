@@ -9,6 +9,7 @@ import moe.feng.aoba.dao.GroupRulesDao
 import moe.feng.aoba.event.BaseGame
 import moe.feng.aoba.model.GroupRules
 import moe.feng.aoba.support.get
+import moe.feng.aoba.support.setOrAdd
 import org.telegram.telegrambots.meta.api.objects.Message
 
 fun AobaBot.registerGameOptions() {
@@ -33,9 +34,7 @@ fun AobaBot.registerGameOptions() {
 								enableMarkdown(true)
 							}
 						} else {
-							val groupRules = GroupRulesDao.data.find { it.id == message.chatId }
-									?: GroupRules(message.chatId).apply { GroupRulesDao.data.add(this) }
-							groupRules.isAllowGame = value
+							GroupRulesDao.setAllowGame(message.chatId, value)
 							replyMessage(message) {
 								text = AobaBot.resources["ALLOW_GAME_MODIFIED_STATUS"].format(
 										AobaBot.resources[if (value) "ALLOW" else "DISALLOW"]
